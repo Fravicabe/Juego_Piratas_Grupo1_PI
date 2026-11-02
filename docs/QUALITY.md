@@ -54,9 +54,9 @@ Un archivo de test por archivo de código: `foo.ts` → `foo.test.ts`.
 
 ---
 
-## 3. Proceso de revisión de código (sin PRs)
+## 3. Proceso de revisión de código (con Pull Requests)
 
-Como trabajamos sin Pull Requests, usamos **revisión por compañero (buddy review)**.
+Revisión por compañero (buddy review) **a través de Pull Requests**, estándar empresarial.
 
 ### Parejas de revisión (rotan cada sprint)
 | Sprint | Revisor → Autor |
@@ -75,17 +75,18 @@ Antes de fusionar una rama a `dev`, el compañero verifica:
 5. **Seguridad del estado**: sin mutación directa del store; usar acciones.
 6. **Tests añadidos** para la lógica nueva.
 
-### Cómo revisar sin PRs
+### Cómo revisar con PR
 ```bash
-# El revisor trae la rama feature y prueba en local
+# 1. El autor sube su rama y abre un PR: feature/* -> dev
+git push -u origin feature/s1-core-state
+# 2. El revisor (buddy) revisa el diff en GitHub y prueba en local
 git fetch origin
 git checkout feature/s1-core-state
 npm install && npm run build && npm run test
-# Si todo OK:
-git checkout dev && git merge feature/s1-core-state
-git push origin dev
+# 3. Si todo OK: aprobar el PR en GitHub → squash merge a dev
+# 4. Borrar la rama feature tras el merge
 ```
-Los comentarios se dejan en el chat (o en un `REVIEW.md` en la rama) — no hace falta formalidad.
+Los comentarios se dejan en el PR (GitHub) — queda trazabilidad de la revisión.
 
 ---
 
