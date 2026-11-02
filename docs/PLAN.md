@@ -121,17 +121,17 @@ Create one Project (board view) with columns:
 
 ```
 # .github/CODEOWNERS
-/src/core/     @person-b
-/src/ui/       @person-c
-/src/features/ @person-d
-/.github/      @person-a
+/src/core/     @Alexis
+/src/ui/       @Francisco
+/src/features/ @Bryton
+/.github/      @Javier
 ```
 
 ### 3.5 Definition of Done (applies to every task)
 - Code compiles (`npm run build`).
 - Lint + tests pass in CI.
-- PR approved by at least 1 teammate.
-- Merged into `dev` via squash merge.
+- Revisado por al menos 1 compañero (sin PR obligatorio: merge local a `dev`).
+- Fusionado a `dev` (merge local o squash, a elección del equipo).
 - Issue moved to Done and closed.
 
 ---
@@ -173,7 +173,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 > Skill, CrewMember, Ship). Person B drafts them; everyone reviews. This unblocks
 > parallel work.
 
-### Task S1-A — Project Scaffold & DevOps (Owner: Person A) — 5 pts
+### Task S1-A — Project Scaffold & Config (Owner: Javier) — 5 pts
 **Branch:** `feature/s1-setup-ci`
 
 **Scope**
@@ -194,7 +194,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 
 ---
 
-### Task S1-B — Core Engine: State, Tick Loop & Save/Load (Owner: Person B) — 8 pts
+### Task S1-B — Core Engine: State, Tick Loop & Save/Load (Owner: Alexis) — 8 pts
 **Branch:** `feature/s1-core-state`
 
 **Scope**
@@ -214,7 +214,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 
 ---
 
-### Task S1-C — UI Shell & Navigation (Owner: Person C) — 5 pts
+### Task S1-C — UI Shell & Navigation (Owner: Francisco) — 5 pts
 **Branch:** `feature/s1-ui-shell`
 
 **Scope**
@@ -235,7 +235,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 
 ---
 
-### Task S1-D — First Gameplay: Sailing & Resource Gathering (Owner: Person D) — 8 pts
+### Task S1-D — First Gameplay: Sailing & Resource Gathering (Owner: Bryton) — 8 pts
 **Branch:** `feature/s1-sailing-gather`
 
 **Scope**

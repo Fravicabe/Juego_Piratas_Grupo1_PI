@@ -27,10 +27,10 @@ poder añadir contenido sin tocar código.
 
 | Dev | Rol / Área principal | Tarea Sprint 1 |
 |---|---|---|
-| **Dev A** | DevOps / Infraestructura | S1-A: Scaffold del proyecto + CI/CD |
-| **Dev B** | Core / Motor del juego | S1-B: Estado, tick loop, guardado/carga |
-| **Dev C** | UI / Frontend | S1-C: Shell de UI y navegación |
-| **Dev D** | Gameplay / Contenido | S1-D: Navegación y recolección de recursos |
+| **Javier** | Infraestructura / Configuración | S1-A: Configuración del proyecto (Vite, React, TS, Tailwind) |
+| **Alexis** | Motor del juego (Core) | S1-B: Estado, tick loop, guardado/carga |
+| **Francisco** | UI / Frontend | S1-C: Shell de UI y navegación |
+| **Bryton** | Gameplay / Contenido | S1-D: Navegación y recolección de recursos |
 
 > Cada tarea tiene un único responsable (accountable), pero todos revisan PRs.
 
@@ -86,6 +86,7 @@ main        ← producción, siempre desplegable, solo tags de release
 - `main` protegida: sin pushes directos, PR + 1 review + CI verde.
 - `dev` protegida: PR + 1 review + CI verde.
 - Las ramas `feature/*` se crean **desde `dev`**, nunca desde `main`.
+- Nota del equipo: trabajamos sin Pull Requests; cada dev fusiona su rama a `dev` con `git merge` local tras revisar con el compañero. Se mantiene la nomenclatura de ramas.
 - Una rama por tarea; un PR por rama.
 - Merge `feature → dev`: **squash merge**.
 - Merge `dev → main`: **merge commit** al final del sprint (release).
