@@ -199,6 +199,8 @@ git push -u origin feature/s1-core-state
 
 ## 📄 Más información
 
-Plan completo: `docs/PLAN.md`
+- Plan completo: `docs/PLAN.md`
+- Plan de calidad (tests, review, gates): `docs/QUALITY.md`
+- Issues del Sprint 1: `docs/ISSUES_SPRINT1.md`
 
 *Versión 1.0 — se ajusta a medida que el equipo aprende.*
