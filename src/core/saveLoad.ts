@@ -22,9 +22,9 @@ export function loadGame(): GameState | null {
 
     const save = parsed as Partial<GameState>;
     if (save.version !== SCHEMA_VERSION) return null;
-    if (!save.player || !save.ship || !save.inventory || !save.skills || !save.islands) {
-      return null;
-    }
+    if (!save.player || !save.ship || !save.inventory) return null;
+    if (!save.skills || Object.keys(save.skills).length === 0) return null;
+    if (!save.islands || Object.keys(save.islands).length === 0) return null;
 
     return save as GameState;
   } catch {
