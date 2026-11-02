@@ -5,7 +5,7 @@ Etiquetas sugeridas: `feature`, `sprint-1`, más el área (`core`, `ui`, `data`,
 Milestone: `Sprint 1`.
 
 > Nota: somos alumnos de 2º DAW. Las tareas están ajustadas a nuestro nivel:
-> sin CI/CD complejo, sin PR obligatorios, código claro y comentado.
+> CI/CD básico y PR obligatorios para `main`/`dev` (estándar empresarial), código claro y comentado.
 
 ---
 
@@ -257,12 +257,12 @@ Tests con Vitest para:
 
 ---
 
-## Orden de trabajo sugerido (sin PR)
+## Orden de trabajo sugerido (con PR)
 
 1. **Javier** primero configura el proyecto (Issue 1 y 2). El resto espera a que exista la base.
 2. **Alexis** crea los tipos (Issue 4) y los comparte. Todos revisan.
 3. **Francisco** y **Bryton** trabajan en paralelo usando los tipos de Alexis.
-4. Integración final: cada uno hace `git merge` de su rama a `dev` y resuelve conflictos.
+4. Integración final: cada dev abre un PR `feature/* -> dev`, el buddy lo revisa y se hace squash merge.
 5. Probar todo junto con `npm run dev`.
 
 ## Comandos para cada dev
@@ -272,9 +272,10 @@ git checkout dev
 git pull origin dev
 git checkout -b feature/s1-<tu-tarea>
 # ... trabajar ...
+npm run check
 git add -A
 git commit -m "feat: <descripcion corta>"
-git checkout dev
-git merge feature/s1-<tu-tarea>
-git push origin dev
+git push -u origin feature/s1-<tu-tarea>
+# Abrir PR en GitHub: feature/s1-<tu-tarea> -> dev
+# Tras aprobación del buddy + CI verde: squash merge
 ```

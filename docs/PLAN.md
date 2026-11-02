@@ -134,8 +134,8 @@ Create one Project (board view) with columns:
 
 - Code compiles (`npm run build`).
 - Lint + tests pass in CI.
-- Revisado por al menos 1 compañero (sin PR obligatorio: merge local a `dev`).
-- Fusionado a `dev` (merge local o squash, a elección del equipo).
+- Revisado por al menos 1 compañero vía Pull Request.
+- Fusionado a `dev` mediante squash merge (PR aprobado).
 - Issue moved to Done and closed.
 
 ---

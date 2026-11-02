@@ -72,30 +72,64 @@ pirate-idle/
 
 ---
 
-## 🌿 Estrategia de ramas (Git Flow lite)
+## 🌿 Estrategia de ramas (estándar empresarial — GitHub Flow + releases)
+
+Modelo híbrido usado en empresas: ramas cortas, `main` siempre desplegable y protegida,
+integración en `dev`, releases por tags. **Nadie hace push directo a `main` ni a `dev`.**
 
 ```
-main        ← producción, siempre desplegable, solo tags de release
-  └── dev   ← rama de integración, objetivo del sprint
-        ├── feature/s1-setup-ci
-        ├── feature/s1-core-state
-        ├── feature/s1-ui-shell
-        └── feature/s1-sailing-gather
+main        ← producción, siempre desplegable, solo tags de release (PROTEGIDA)
+  └── dev   ← integración del sprint, deploy a staging (PROTEGIDA)
+        ├── feature/s1-setup-ci          (Javier)
+        ├── feature/s1-core-state        (Alexis)
+        ├── feature/s1-ui-shell          (Francisco)
+        └── feature/s1-sailing-gather    (Bryton)
+              └── (opcional) release/s1  ← rama de estabilización pre-release
+hotfix/*    ← desde main, para bugs críticos en producción
 ```
 
-**Reglas**
+### Reglas (no negociables)
+1. **`main` y `dev` están protegidas** en GitHub (Settings → Branches):
+   - Prohibido push directo.
+   - Requiere Pull Request para entrar.
+   - Requiere **1 aprobación** de un compañero.
+   - Requiere CI verde (build + lint + tests).
+   - Prohibido force-push y borrado.
+2. **Toda tarea se hace en una rama `feature/*`** creada desde `dev`.
+   - Vida corta (máx. 2–3 días). Si crece, se parte en varias ramas.
+3. **Integración `feature → dev`**: vía **Pull Request + squash merge**.
+   - El revisor (buddy) aprueba tras pasar el checklist de `docs/QUALITY.md`.
+4. **Release `dev → main`**: al final de cada sprint, vía **PR + merge commit** y tag `vX.Y.Z`.
+   - Solo el responsable de release (rotativo) abre este PR.
+5. **Hotfixes**: rama `hotfix/*` desde `main`, PR a `main` y cherry-pick/merge a `dev`.
+6. **Un PR por tarea**, pequeño y enfocado. PRs grandes se rechazan y se parten.
 
-- `main` protegida: sin pushes directos, PR + 1 review + CI verde.
-- `dev` protegida: PR + 1 review + CI verde.
-- Las ramas `feature/*` se crean **desde `dev`**, nunca desde `main`.
-- Nota del equipo: trabajamos sin Pull Requests; cada dev fusiona su rama a `dev` con `git merge` local tras revisar con el compañero. Se mantiene la nomenclatura de ramas.
-- Una rama por tarea; un PR por rama.
-- Merge `feature → dev`: **squash merge**.
-- Merge `dev → main`: **merge commit** al final del sprint (release).
-- Hotfixes: rama `hotfix/*` desde `main`, merge a `main` y `dev`.
+### Estado actual de `main` y cómo protegerla
+Durante el arranque del proyecto se subió la base directamente a `main` (sin PR),
+porque la protección aún no estaba configurada. Para dejarlo "limpio" a estándar
+empresarial, elige una de estas dos opciones:
 
-**Nomenclatura de ramas**
+**Opción A — Mantener y proteger desde ahora (recomendada, menos trabajo)**
+1. En GitHub: Settings → Branches → Add rule para `main` (y para `dev`).
+2. Activar: "Require a pull request before merging", "Require status checks to pass",
+   "Require approvals (1)", "Do not allow bypassing", "Block force pushes".
+3. A partir de ahora todo cambio a `main`/`dev` entra por PR. El historial previo
+   queda como "bootstrap" y es aceptable.
 
+**Opción B — Resetear `main` a un estado limpio (más estricto)**
+Si quieres que `main` empiece desde el commit inicial del repo remoto (`a92e99e`)
+y que todo lo demás entre por PR:
+```bash
+git fetch origin
+git checkout main
+git reset --hard a92e99e          # vuelve al commit inicial remoto
+git push --force origin main      # ⚠️ solo si nadie más ha clonado aún
+# Luego: abrir PRs desde dev/feature para reintroducir el scaffold y docs
+```
+> ⚠️ El force-push solo es seguro si el equipo aún no ha clonado el repo.
+> Si ya hay clones, usa la Opción A.
+
+### Nomenclatura de ramas**
 ```
 feature/s<sprint>-<slug>     ej. feature/s1-core-state
 bugfix/<numero>-<slug>
@@ -175,17 +209,16 @@ npm run format       # prettier: formatea todo el repo
 npm run format:check # comprueba el formato sin modificar archivos
 ```
 
-Configuración de lint y formato: `eslint.config.js`, `.prettierrc` y `.prettierignore`.
-
-Flujo de ramas de ejemplo:
-
+Flujo de ramas de ejemplo (con PR, estándar empresarial):
 ```bash
 git checkout dev
 git pull
 git checkout -b feature/s1-core-state
 # ... trabajo ...
+npm run check          # lint + tests + build deben pasar
 git push -u origin feature/s1-core-state
-# abrir PR: feature/s1-core-state -> dev
+# Abrir PR en GitHub: feature/s1-core-state -> dev
+# → buddy review + CI verde → squash merge
 ```
 
 ---
@@ -213,6 +246,8 @@ git push -u origin feature/s1-core-state
 
 ## 📄 Más información
 
-Plan completo: `docs/PLAN.md`
+- Plan completo: `docs/PLAN.md`
+- Plan de calidad (tests, review, gates): `docs/QUALITY.md`
+- Issues del Sprint 1: `docs/ISSUES_SPRINT1.md`
 
 _Versión 1.0 — se ajusta a medida que el equipo aprende._
