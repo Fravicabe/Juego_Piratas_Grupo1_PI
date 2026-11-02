@@ -1,0 +1,6 @@
+[
+  { "id": "wood", "name": "Wood", "icon": "🪵" },
+  { "id": "iron", "name": "Iron", "icon": "⚙️" },
+  { "id": "food", "name": "Food", "icon": "🍖" },
+  { "id": "gold", "name": "Gold", "icon": "🪙" }
+]

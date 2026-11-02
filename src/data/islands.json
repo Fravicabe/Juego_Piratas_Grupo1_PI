@@ -1,0 +1,5 @@
+[
+  { "id": "tortuga", "name": "Tortuga", "description": "A pirate haven.", "resources": ["wood", "food"], "travelTimeBase": 0, "unlocked": true },
+  { "id": "nassau", "name": "Nassau", "description": "Trading hub.", "resources": ["iron", "gold"], "travelTimeBase": 60, "unlocked": true },
+  { "id": "skull_isle", "name": "Skull Isle", "description": "Dangerous, rich.", "resources": ["iron", "gold", "food"], "travelTimeBase": 180, "unlocked": false }
+]

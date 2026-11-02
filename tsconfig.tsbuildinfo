@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/core/saveLoad.ts","./src/core/store.ts","./src/core/tick.ts","./src/core/types.ts","./tests/core/tick.test.ts"],"version":"5.9.3"}
