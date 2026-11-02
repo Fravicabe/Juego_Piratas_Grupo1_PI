@@ -15,6 +15,7 @@ progreso a cambio de multiplicadores permanentes. Todo es data-driven para
 poder añadir contenido sin tocar código.
 
 ### Pilares
+
 1. **Bucle idle** — navegar, combatir y recolectar en automático; el jugador define objetivos.
 2. **Progresión** — habilidades (navegación, combate, comercio) suben de nivel; los rangos desbloquean contenido.
 3. **Economía** — oro, recursos y comercio entre islas con diferencias de precio.
@@ -25,12 +26,12 @@ poder añadir contenido sin tocar código.
 
 ## 👥 Equipo (4 devs)
 
-| Dev | Rol / Área principal | Tarea Sprint 1 |
-|---|---|---|
-| **Javier** | Infraestructura / Configuración | S1-A: Configuración del proyecto (Vite, React, TS, Tailwind) |
-| **Alexis** | Motor del juego (Core) | S1-B: Estado, tick loop, guardado/carga |
-| **Francisco** | UI / Frontend | S1-C: Shell de UI y navegación |
-| **Bryton** | Gameplay / Contenido | S1-D: Navegación y recolección de recursos |
+| Dev           | Rol / Área principal            | Tarea Sprint 1                                               |
+| ------------- | ------------------------------- | ------------------------------------------------------------ |
+| **Javier**    | Infraestructura / Configuración | S1-A: Configuración del proyecto (Vite, React, TS, Tailwind) |
+| **Alexis**    | Motor del juego (Core)          | S1-B: Estado, tick loop, guardado/carga                      |
+| **Francisco** | UI / Frontend                   | S1-C: Shell de UI y navegación                               |
+| **Bryton**    | Gameplay / Contenido            | S1-D: Navegación y recolección de recursos                   |
 
 > Cada tarea tiene un único responsable (accountable), pero todos revisan PRs.
 
@@ -38,17 +39,17 @@ poder añadir contenido sin tocar código.
 
 ## 🛠️ Stack tecnológico
 
-| Capa | Tecnología |
-|---|---|
-| Lenguaje | TypeScript (strict) |
-| Bundler | Vite |
-| UI | React 18 |
-| Estado | Zustand + Immer |
-| Estilos | Tailwind CSS |
+| Capa         | Tecnología                        |
+| ------------ | --------------------------------- |
+| Lenguaje     | TypeScript (strict)               |
+| Bundler      | Vite                              |
+| UI           | React 18                          |
+| Estado       | Zustand + Immer                   |
+| Estilos      | Tailwind CSS                      |
 | Persistencia | localStorage + export/import JSON |
-| Tests | Vitest + Testing Library |
-| Lint/Format | ESLint + Prettier |
-| CI | GitHub Actions |
+| Tests        | Vitest + Testing Library          |
+| Lint/Format  | ESLint + Prettier                 |
+| CI           | GitHub Actions                    |
 
 ---
 
@@ -151,6 +152,7 @@ chore/<slug>
 - Los PRs referencian issues con `Closes #12` en la descripción.
 
 ### Definition of Done
+
 - El código compila (`npm run build`).
 - Lint + tests pasan en CI.
 - PR aprobado por al menos 1 compañero.
@@ -162,25 +164,30 @@ chore/<slug>
 ## 🏃 Sprints (4 sprints de 2 semanas)
 
 ### Sprint 1 — Fundamentos y primer bucle jugable (MVP)
+
 Objetivo: app ejecutable donde el jugador navega, recolecta y ve números subir.
+
 - S1-A: Scaffold + CI (Dev A, 5 pts)
 - S1-B: Motor core: estado, tick, guardado/carga (Dev B, 8 pts)
 - S1-C: Shell de UI y navegación (Dev C, 5 pts)
 - S1-D: Navegación y recolección (Dev D, 8 pts)
 
 ### Sprint 2 — Combate, economía y progresión
+
 - S2-A: Motor de combate (Dev A, 8 pts)
 - S2-B: Sistema de habilidades y UI de niveles (Dev B, 5 pts)
 - S2-C: Comercio/economía (Dev C, 5 pts)
 - S2-D: Reclutamiento de tripulación (Dev D, 5 pts)
 
 ### Sprint 3 — Contenido, automatización y prestigio
+
 - S3-A: Pipeline de contenido (5 islas, items, enemigos) (Dev A, 5 pts)
 - S3-B: Mejoras y slots de equipo del barco (Dev B, 5 pts)
 - S3-C: Progreso offline + pulido del tick (Dev C, 3 pts)
 - S3-D: Prestigio ("Nueva Travesía") + logros (Dev D, 8 pts)
 
 ### Sprint 4 — Balance, pulido y release
+
 - S4-A: Pase de balance y curva de dificultad (Dev A, 5 pts)
 - S4-B: Audio, iconos y pulido visual (Dev B, 5 pts)
 - S4-C: Cobertura de tests + bug bash (Dev C, 5 pts)
@@ -197,7 +204,9 @@ npm install
 npm run dev          # http://localhost:5173
 npm run test         # vitest
 npm run build        # build de producción
-npm run lint         # eslint
+npm run lint         # eslint (flat config)
+npm run format       # prettier: formatea todo el repo
+npm run format:check # comprueba el formato sin modificar archivos
 ```
 
 Flujo de ramas de ejemplo (con PR, estándar empresarial):
@@ -225,13 +234,13 @@ git push -u origin feature/s1-core-state
 
 ## ⚠️ Riesgos y mitigaciones
 
-| Riesgo | Mitigación |
-|---|---|
-| Conflictos en estado compartido | Contrato primero en `types.ts`; un dueño por área de archivos |
-| Scope creep en Sprint 1 | DoD estricto; "nice to have" va al backlog |
-| Bugs de matemática idle (NaN, overflow) | Usar números acotados; tests unitarios del tick |
-| Corrupción de guardado | Versionado de esquema + migración + slot de backup |
-| Carga desigual | Standup diario; reasignar tareas si hay bloqueos |
+| Riesgo                                  | Mitigación                                                    |
+| --------------------------------------- | ------------------------------------------------------------- |
+| Conflictos en estado compartido         | Contrato primero en `types.ts`; un dueño por área de archivos |
+| Scope creep en Sprint 1                 | DoD estricto; "nice to have" va al backlog                    |
+| Bugs de matemática idle (NaN, overflow) | Usar números acotados; tests unitarios del tick               |
+| Corrupción de guardado                  | Versionado de esquema + migración + slot de backup            |
+| Carga desigual                          | Standup diario; reasignar tareas si hay bloqueos              |
 
 ---
 
@@ -241,4 +250,4 @@ git push -u origin feature/s1-core-state
 - Plan de calidad (tests, review, gates): `docs/QUALITY.md`
 - Issues del Sprint 1: `docs/ISSUES_SPRINT1.md`
 
-*Versión 1.0 — se ajusta a medida que el equipo aprende.*
+_Versión 1.0 — se ajusta a medida que el equipo aprende._
