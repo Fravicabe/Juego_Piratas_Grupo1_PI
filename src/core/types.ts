@@ -1,4 +1,4 @@
-// Shared contract for the whole game. Changes require team review + PR.
+// Shared contract for the whole game. Changes require team review.
 
 export type ResourceId = "wood" | "iron" | "food" | "gold";
 
@@ -36,18 +36,16 @@ export interface Island {
   name: string;
   description: string;
   resources: ResourceId[]; // what can be gathered here
-  travelTimeBase: number; // seconds from a reference point
+  travelTimeBase: number; // seconds from the reference island (Tortuga)
   unlocked: boolean;
 }
 
-export interface Inventory {
-  [key: string]: number; // ResourceId -> amount
-}
+// Gold is a resource too, so the inventory is the single source of truth.
+export type Inventory = Record<ResourceId, number>;
 
 export interface Player {
   name: string;
   rank: string;
-  gold: number;
 }
 
 export interface GameState {
@@ -66,12 +64,7 @@ export interface GameState {
   totalPlaytime: number; // seconds
 }
 
-export type GameAction =
-  | { type: "SET_DESTINATION"; islandId: string }
-  | { type: "ARRIVE" }
-  | { type: "GATHER_TICK"; dt: number }
-  | { type: "LOAD"; state: GameState }
-  | { type: "RESET" };
-
 export const SCHEMA_VERSION = 1;
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60; // 8 hours
+export const TICK_MS = 1000;
+export const AUTOSAVE_MS = 10_000;
