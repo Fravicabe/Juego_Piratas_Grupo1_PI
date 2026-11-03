@@ -7,8 +7,6 @@ const navItems = [
   { path: "/recursos", label: "Recursos", icon: "📦" },
   { path: "/crew", label: "Tripulación", icon: "👥" },
   { path: "/ship", label: "Barco", icon: "⛵" },
-
-  { path: "/recursos", label: "Recursos", icon: "📦" },
 ];
 
 export default function Sidebar() {
