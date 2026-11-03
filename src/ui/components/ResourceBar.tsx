@@ -5,7 +5,10 @@ export default function ResourceBar({ id, amount, label }: ResourceBarProps) {
     iron: "⚙️",
     food: "🍖",
     gold: "🪙",
-  }[id] as string;
+    provisions: "🍖",
+    reputation: "⭐",
+    crew: "👥",
+  }[id] as string || "📦";
   return (
     <div className="flex items-center items-center space-x-2 mb-2">
       <span className="text-gold">{icon}</span>
