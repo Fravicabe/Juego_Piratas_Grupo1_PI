@@ -1,37 +1,26 @@
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import Topbar from "./ui/components/Topbar";
+import Sidebar from "./ui/components/Sidebar";
+import Home from "./ui/pages/Home";
+import Map from "./ui/pages/Map";
+import Skills from "./ui/pages/Skills";
+import Crew from "./ui/pages/Crew";
+import Ship from "./ui/pages/Ship";
+import Settings from "./ui/pages/Settings";
 
 export default function App() {
   return (
     <div className="flex min-h-screen">
-      <nav className="w-48 bg-wood/80 p-4 space-y-2">
-        <h1 className="text-gold font-bold text-xl mb-4">🏴‍☠️ Pirate Idle</h1>
-        {[
-          ["/", "Home"],
-          ["/map", "Map"],
-          ["/skills", "Skills"],
-          ["/crew", "Crew"],
-          ["/ship", "Ship"],
-          ["/settings", "Settings"],
-        ].map(([to, label]) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded ${isActive ? "bg-gold text-wood" : "hover:bg-wood"}`
-            }
-          >
-            {label}
-          </NavLink>
-        ))}
-      </nav>
+      <Topbar />
+      <Sidebar />
       <main className="flex-1 p-6">
         <Routes>
-          <Route path="/" element={<div>Home (dashboard) — Sprint 1</div>} />
-          <Route path="/map" element={<div>Map — Sprint 1</div>} />
-          <Route path="/skills" element={<div>Skills — Sprint 2</div>} />
-          <Route path="/crew" element={<div>Crew — Sprint 2</div>} />
-          <Route path="/ship" element={<div>Ship — Sprint 2</div>} />
-          <Route path="/settings" element={<div>Settings</div>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/map" element={<Map />} />
+          <Route path="/skills" element={<Skills />} />
+          <Route path="/crew" element={<Crew />} />
+          <Route path="/ship" element={<Ship />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
     </div>
