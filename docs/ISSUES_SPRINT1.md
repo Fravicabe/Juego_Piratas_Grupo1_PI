@@ -167,7 +167,7 @@ Componentes básicos para usar en toda la app:
 Crear JSON en `src/data/`:
 - `islands.json`: 3 islas (Tortuga, Nassau, Isla Calavera) con recursos y tiempo de viaje.
 - `resources.json`: madera, hierro, comida, oro con icono.
-- `skills.json`: navegación y recolección con nivel y XP.
+- `skills.json`: navegación, recolección y negociación con nivel y XP.
 
 **Criterios de aceptación:**
 - Los JSON son válidos (se pueden importar con `resolveJsonModule`).

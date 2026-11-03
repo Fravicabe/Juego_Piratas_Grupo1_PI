@@ -3,10 +3,17 @@ import { immer } from "zustand/middleware/immer";
 import type { GameState } from "./types";
 import { createInitialState } from "./initialState";
 import { clearSave } from "./saveLoad";
-import { applyElapsed, applyXp, arriveAtDestination, gatherFor } from "./tick";
+import { skillEffect } from "./skills";
+import {
+  advanceGame,
+  applyXp,
+  arriveAtDestination,
+  gatherFor,
+} from "./tick";
 
 export interface GameStore extends GameState {
   setDestination: (islandId: string) => void;
+  setActiveSkill: (skillId: string) => void;
   arrive: () => void;
   gather: (dtSeconds: number) => void;
   addXp: (skillId: string, amount: number) => void;
@@ -26,10 +33,18 @@ export const useGameStore = create<GameStore>()(
 
         const current = s.currentIslandId ? s.islands[s.currentIslandId] : undefined;
         const distance = island.travelTimeBase - (current?.travelTimeBase ?? 0);
-        const speed = Math.max(0.1, s.ship.speed);
+        const sailing = s.skills.sailing;
+        const speedMultiplier = sailing ? skillEffect(sailing) : 1;
+        const speed = Math.max(0.1, s.ship.speed * speedMultiplier);
 
         s.destinationIslandId = islandId;
         s.travelEta = Math.max(1, Math.abs(distance) / speed);
+      }),
+
+    setActiveSkill: (skillId) =>
+      set((s) => {
+        if (!s.skills[skillId]) return;
+        s.activeSkillId = skillId;
       }),
 
     arrive: () =>
@@ -51,7 +66,7 @@ export const useGameStore = create<GameStore>()(
 
     tick: (dtSeconds, now = Date.now()) =>
       set((s) => {
-        Object.assign(s, applyElapsed(s as GameState, dtSeconds));
+        Object.assign(s, advanceGame(s as GameState, dtSeconds));
         s.lastTick = now;
       }),
 
@@ -80,6 +95,7 @@ export function getGameState(): GameState {
     ship: s.ship,
     crew: s.crew,
     skills: s.skills,
+    activeSkillId: s.activeSkillId,
     islands: s.islands,
     discoveredIslands: s.discoveredIslands,
     currentIslandId: s.currentIslandId,
@@ -87,6 +103,7 @@ export function getGameState(): GameState {
     travelEta: s.travelEta,
     inventory: s.inventory,
     lastTick: s.lastTick,
+    worldAccumulatorMs: s.worldAccumulatorMs,
     totalPlaytime: s.totalPlaytime,
   };
 }

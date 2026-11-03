@@ -200,7 +200,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 **Scope**
 - Define shared types in `src/core/types.ts`.
 - Implement `GameState` store (Zustand) with: player, ship, crew, islands discovered, inventory, skills, gold, timestamps.
-- Implement tick loop: `requestAnimationFrame`/`setInterval` accumulator; runs game systems at fixed 1s ticks; tracks `lastTick` for offline catch-up.
+- Implement tick loop: a single `setInterval` accelerator with two logical rates — 50ms for active skill progress (Progress Knight-style) and 1s for travel/gathering; tracks `lastTick` and `worldAccumulatorMs` for offline catch-up.
 - Implement save/load: serialize to localStorage on interval + on `visibilitychange`/`beforeunload`; load on boot; validate schema version.
 - Export `useGameStore`, `tick(dt)`, `saveGame()`, `loadGame()`.
 - Unit tests for tick accumulation and save/load round-trip.
@@ -239,7 +239,7 @@ Deliverables: tuning pass, audio/assets, full test coverage of core, deploy to G
 **Branch:** `feature/s1-sailing-gather`
 
 **Scope**
-- Data: `src/data/islands.json` (3 starter islands), `src/data/resources.json` (wood, iron, food, gold), `src/data/skills.json` (sailing, gathering).
+- Data: `src/data/islands.json` (3 starter islands), `src/data/resources.json` (wood, iron, food, gold), `src/data/skills.json` (sailing, gathering, bargaining).
 - Sailing system: choose destination island; travel takes time scaled by ship speed; auto-arrives; emits `arrived` event.
 - Gathering system: at an island, auto-gather its resources at a rate scaled by gathering skill; skill XP gained per gather.
 - Skill leveling: XP → level with exponential curve; level multiplies gather rate.

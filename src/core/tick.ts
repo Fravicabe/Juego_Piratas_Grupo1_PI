@@ -1,48 +1,50 @@
 // Pure tick logic. Kept side-effect free so it is easy to test.
 
 import type { GameState, Skill } from "./types";
-import { OFFLINE_CAP_SECONDS } from "./types";
+import { OFFLINE_CAP_SECONDS, WORLD_TICK_MS } from "./types";
+import { applyXp, skillEffect } from "./skills";
+
+export {
+  applyXp,
+  skillEffect,
+  xpForLevel,
+  XP_BASE,
+  XP_LEVEL_GROWTH,
+} from "./skills";
 
 export const GATHER_BASE_RATE = 1;
-export const GATHER_RATE_PER_LEVEL = 0.25;
-export const GATHER_XP_PER_SECOND = 10;
-export const SAILING_XP_PER_SECOND = 2;
-export const XP_BASE = 100;
-export const XP_GROWTH = 1.5;
+export const GATHER_XP_PER_SECOND = 8;
+export const SAILING_XP_PER_SECOND = 1;
+export const BARGAINING_XP_PER_SECOND = 1;
+
+/** Longest slice used when applying offline time, so level-ups are felt. */
 export const OFFLINE_STEP_SECONDS = 60;
+
+function safeDelta(seconds: number): number {
+  return Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+}
 
 export function accumulateTicks(
   lastTick: number,
   now: number,
   capSeconds: number,
 ): { elapsedSeconds: number; newLastTick: number } {
-  const raw = Math.max(0, (now - lastTick) / 1000);
+  const raw =
+    Number.isFinite(lastTick) && Number.isFinite(now)
+      ? Math.max(0, (now - lastTick) / 1000)
+      : 0;
   const elapsed = Math.min(raw, capSeconds);
   return { elapsedSeconds: elapsed, newLastTick: now };
 }
 
-export function xpForLevel(level: number): number {
-  return Math.floor(XP_BASE * Math.pow(XP_GROWTH, Math.max(0, level - 1)));
-}
-
-export function applyXp(skill: Skill, amount: number): Skill {
-  let level = Math.max(1, skill.level);
-  let xp = Math.max(0, skill.xp) + Math.max(0, amount);
-  let xpToNext = skill.xpToNext > 0 ? skill.xpToNext : xpForLevel(level);
-  let guard = 0;
-
-  while (xp >= xpToNext && guard < 1000) {
-    xp -= xpToNext;
-    level += 1;
-    xpToNext = xpForLevel(level);
-    guard += 1;
-  }
-
-  return { ...skill, level, xp, xpToNext };
-}
-
-export function gatherRate(level: number): number {
-  return GATHER_BASE_RATE + Math.max(0, level - 1) * GATHER_RATE_PER_LEVEL;
+/**
+ * Resource yield per second for a gathering level. Level 1 gives 1/s and each
+ * level adds `effectPerLevel` (5% by default).
+ */
+export function gatherRate(level: number, effectPerLevel = 0.05): number {
+  const safeLevel = Math.max(1, Number(level) || 1);
+  const perLevel = Number.isFinite(effectPerLevel) ? effectPerLevel : 0.05;
+  return GATHER_BASE_RATE * (1 + Math.max(0, safeLevel - 1) * perLevel);
 }
 
 export function arriveAtDestination(state: GameState): GameState {
@@ -60,42 +62,63 @@ export function arriveAtDestination(state: GameState): GameState {
   };
 }
 
+/**
+ * Advances travel by `dtSeconds` of real time. The sailing skill makes the
+ * ship cover more ETA per second, and earns XP for the real time spent sailing.
+ */
 export function travelFor(
   state: GameState,
   dtSeconds: number,
 ): { state: GameState; remainingSeconds: number } {
-  const dt = Math.max(0, dtSeconds);
+  const dt = safeDelta(dtSeconds);
   if (!state.destinationIslandId || dt === 0) {
     return { state, remainingSeconds: dt };
   }
 
+  const sailing = state.skills.sailing;
+  const speedMultiplier = Math.max(
+    0.1,
+    sailing ? skillEffect(sailing) : 1,
+  );
   const eta = Math.max(0, state.travelEta);
-  const travelSeconds = Math.min(eta, dt);
+  const travelSeconds = Math.min(eta, dt * speedMultiplier);
+  const realTravelSeconds =
+    speedMultiplier > 0 ? travelSeconds / speedMultiplier : travelSeconds;
+
   let next: GameState = {
     ...state,
-    travelEta: eta - travelSeconds,
+    travelEta: Math.max(0, eta - travelSeconds),
   };
 
-  const sailing = next.skills.sailing;
-  if (sailing && travelSeconds > 0) {
+  if (sailing && realTravelSeconds > 0) {
     next = {
       ...next,
       skills: {
         ...next.skills,
-        sailing: applyXp(sailing, travelSeconds * SAILING_XP_PER_SECOND),
+        sailing: applyXp(
+          sailing,
+          realTravelSeconds * SAILING_XP_PER_SECOND,
+        ),
       },
     };
   }
 
-  if (next.travelEta <= 0) {
+  if (next.travelEta <= 0.000001) {
     next = arriveAtDestination(next);
   }
 
-  return { state: next, remainingSeconds: dt - travelSeconds };
+  return {
+    state: next,
+    remainingSeconds: Math.max(0, dt - realTravelSeconds),
+  };
 }
 
+/**
+ * Gives resources and activity XP. Bargaining only multiplies gold and only
+ * earns XP on islands that actually produce gold.
+ */
 export function gatherFor(state: GameState, dtSeconds: number): GameState {
-  const dt = Math.max(0, dtSeconds);
+  const dt = safeDelta(dtSeconds);
   if (dt === 0 || !state.currentIslandId || state.destinationIslandId) {
     return state;
   }
@@ -104,51 +127,114 @@ export function gatherFor(state: GameState, dtSeconds: number): GameState {
   const gathering = state.skills.gathering;
   if (!island || !gathering) return state;
 
-  const rate = gatherRate(gathering.level);
+  const bargaining = state.skills.bargaining;
+  const goldMultiplier = bargaining ? skillEffect(bargaining) : 1;
+  const rate =
+    gatherRate(gathering.level, gathering.effectPerLevel) * dt;
   const inventory = { ...state.inventory };
 
   for (const resource of island.resources) {
-    inventory[resource] = (inventory[resource] ?? 0) + rate * dt;
+    const multiplier = resource === "gold" ? goldMultiplier : 1;
+    inventory[resource] = (inventory[resource] ?? 0) + rate * multiplier;
   }
+
+  let skills: Record<string, Skill> = {
+    ...state.skills,
+    gathering: applyXp(gathering, dt * GATHER_XP_PER_SECOND),
+  };
+
+  if (bargaining && island.resources.includes("gold")) {
+    skills = {
+      ...skills,
+      bargaining: applyXp(bargaining, dt * BARGAINING_XP_PER_SECOND),
+    };
+  }
+
+  return { ...state, inventory, skills };
+}
+
+/**
+ * Fast tick: the skill selected by the player gains XP continuously, even
+ * while travelling or gathering. This is the part that runs every 50ms.
+ */
+export function trainActiveSkill(
+  state: GameState,
+  dtSeconds: number,
+): GameState {
+  const dt = safeDelta(dtSeconds);
+  const skillId = state.activeSkillId;
+  if (dt === 0 || !skillId) return state;
+
+  const skill = state.skills[skillId];
+  if (!skill) return state;
 
   return {
     ...state,
-    inventory,
     skills: {
       ...state.skills,
-      gathering: applyXp(gathering, dt * GATHER_XP_PER_SECOND),
+      [skillId]: applyXp(skill, dt * skill.xpPerSecond),
     },
   };
 }
 
-export function applyTick(state: GameState, dtSeconds: number): GameState {
-  const dt = Math.max(0, dtSeconds);
+/**
+ * Slow tick: one second of travel + gathering. Travel and arrival deliberately
+ * stay on this 1s cadence so the map countdown is stable.
+ */
+export function tickWorld(state: GameState, dtSeconds: number): GameState {
+  const dt = safeDelta(dtSeconds);
   if (dt === 0) return state;
 
   const travelled = travelFor(state, dt);
-  const gathered = gatherFor(travelled.state, travelled.remainingSeconds);
+  return gatherFor(travelled.state, travelled.remainingSeconds);
+}
 
-  return {
-    ...gathered,
-    totalPlaytime: state.totalPlaytime + dt,
-  };
+function applyTimeChunk(state: GameState, seconds: number): GameState {
+  let next = trainActiveSkill(state, seconds);
+  const storedAccumulator = Number.isFinite(next.worldAccumulatorMs)
+    ? next.worldAccumulatorMs
+    : 0;
+  let accumulator = Math.max(0, storedAccumulator) + seconds * 1000;
+
+  while (accumulator >= WORLD_TICK_MS) {
+    next = tickWorld(next, WORLD_TICK_MS / 1000);
+    accumulator -= WORLD_TICK_MS;
+  }
+
+  return { ...next, worldAccumulatorMs: accumulator };
 }
 
 /**
- * Applies a long span of time in small steps so level-ups affect the rate
- * during offline catch-up.
+ * Advances the whole game by `dtSeconds` of real time.
+ *
+ * A single logical loop drives two rates:
+ * - skills are trained for the full delta (the caller runs this every 50ms);
+ * - the world accumulates that delta and runs exact 1s travel/gather ticks.
  */
-export function applyElapsed(state: GameState, seconds: number): GameState {
-  let remaining = Math.max(0, seconds);
+export function advanceGame(state: GameState, dtSeconds: number): GameState {
+  const dt = safeDelta(dtSeconds);
+  if (dt === 0) return state;
+
+  let remaining = dt;
   let next = state;
 
-  while (remaining > 0) {
+  while (remaining > 0.000001) {
     const step = Math.min(remaining, OFFLINE_STEP_SECONDS);
-    next = applyTick(next, step);
+    next = applyTimeChunk(next, step);
     remaining -= step;
   }
 
-  return next;
+  return { ...next, totalPlaytime: state.totalPlaytime + dt };
+}
+
+/** Backwards-compatible alias used by the store and tests. */
+export function applyTick(state: GameState, dtSeconds: number): GameState {
+  return advanceGame(state, dtSeconds);
+}
+
+/** Applies a long span of time safely, in 60s slices. */
+export function applyElapsed(state: GameState, seconds: number): GameState {
+  return advanceGame(state, seconds);
 }
 
 export function applyOfflineProgress(
@@ -157,5 +243,5 @@ export function applyOfflineProgress(
   capSeconds = OFFLINE_CAP_SECONDS,
 ): GameState {
   const { elapsedSeconds } = accumulateTicks(state.lastTick, now, capSeconds);
-  return { ...applyElapsed(state, elapsedSeconds), lastTick: now };
+  return { ...advanceGame(state, elapsedSeconds), lastTick: now };
 }
