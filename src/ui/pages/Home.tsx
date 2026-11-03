@@ -1,9 +1,8 @@
 import { useGameStore } from "../../core/store";
 import Card from "../components/Card";
-import ResourceBar from "../components/ResourceBar";
 
 export default function Home() {
-  const { currentIslandId, inventory } = useGameStore();
+  const { currentIslandId } = useGameStore();
   const islandName = currentIslandId ? currentIslandId : "Tortuga";
 
   const locations = [
@@ -27,14 +26,6 @@ export default function Home() {
             </Card>
           ))}
         </div>
-        <Card>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <ResourceBar id="gold" amount={inventory?.gold ?? 0} label="Oro" />
-            <ResourceBar id="provisions" amount={inventory?.food ?? 0} label="Provisiones" />
-            <ResourceBar id="reputation" amount={inventory?.wood ?? 0} label="Reputación" />
-            <ResourceBar id="crew" amount={inventory?.iron ?? 0} label="Tripulación" />
-          </div>
-        </Card>
       </Card>
     </div>
   );

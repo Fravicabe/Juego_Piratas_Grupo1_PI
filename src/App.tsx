@@ -7,6 +7,7 @@ import Skills from "./ui/pages/Skills";
 import Crew from "./ui/pages/Crew";
 import Ship from "./ui/pages/Ship";
 import Settings from "./ui/pages/Settings";
+import Recursos from "./ui/pages/Recursos";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/crew" element={<Crew />} />
             <Route path="/ship" element={<Ship />} />
             <Route path="/settings" element={<Settings />} />
+          <Route path="/recursos" element={<Recursos />} />
           </Routes>
         </main>
       </div>
