@@ -38,6 +38,7 @@ export interface Island {
   resources: ResourceId[]; // what can be gathered here
   travelTimeBase: number; // seconds from the reference island (Tortuga)
   unlocked: boolean;
+  lockedUntilLevel?: number; // nivel de navegación requerido para desbloquear
 }
 
 // Gold is a resource too, so the inventory is the single source of truth.

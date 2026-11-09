@@ -21,6 +21,7 @@
     "description": "Dangerous, rich.",
     "resources": ["iron", "gold", "food"],
     "travelTimeBase": 180,
-    "unlocked": false
+    "unlocked": false,
+    "lockedUntilLevel": 50
   }
 ]

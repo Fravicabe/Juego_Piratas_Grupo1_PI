@@ -22,7 +22,13 @@ export const useGameStore = create<GameStore>()(
     setDestination: (islandId) =>
       set((s) => {
         const island = s.islands[islandId];
-        if (!island || !island.unlocked || islandId === s.currentIslandId) return;
+        if (!island) return;
+
+        const sailingLevel = s.skills.sailing?.level ?? 1;
+
+        if (!island.unlocked) return;
+        if (island.lockedUntilLevel && sailingLevel < island.lockedUntilLevel) return;
+        if (islandId === s.currentIslandId) return;
 
         const current = s.currentIslandId ? s.islands[s.currentIslandId] : undefined;
         const distance = island.travelTimeBase - (current?.travelTimeBase ?? 0);

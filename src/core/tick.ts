@@ -22,7 +22,7 @@ export function accumulateTicks(
 }
 
 export function xpForLevel(level: number): number {
-  return Math.floor(XP_BASE * Math.pow(XP_GROWTH, Math.max(0, level - 1)));
+  return XP_BASE + Math.max(0, level - 1) * 50;
 }
 
 export function applyXp(skill: Skill, amount: number): Skill {

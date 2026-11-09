@@ -32,7 +32,7 @@ describe("XP helpers", () => {
   it("creates an increasing XP curve", () => {
     expect(xpForLevel(1)).toBe(100);
     expect(xpForLevel(2)).toBe(150);
-    expect(xpForLevel(3)).toBe(225);
+    expect(xpForLevel(3)).toBe(200);
   });
 
   it("levels up and carries leftover XP", () => {
@@ -48,7 +48,7 @@ describe("XP helpers", () => {
 
     expect(next.level).toBe(3);
     expect(next.xp).toBe(0);
-    expect(next.xpToNext).toBe(225);
+    expect(next.xpToNext).toBe(200);
   });
 
   it("increases the gather rate with the level", () => {
