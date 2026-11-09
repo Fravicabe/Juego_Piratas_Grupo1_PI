@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { it, expect } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 import Sidebar from "../../src/ui/components/Sidebar";
 

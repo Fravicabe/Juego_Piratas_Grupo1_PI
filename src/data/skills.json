@@ -1,0 +1,4 @@
+[
+  { "id": "sailing", "name": "Navegación", "level": 1, "xp": 0, "xpToNext": 100 },
+  { "id": "gathering", "name": "Recolección", "level": 1, "xp": 0, "xpToNext": 100 }
+]
