@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Sidebar from "../../src/ui/components/Sidebar";
+import { expect, it } from "vitest";
 
 it("renders 6 navigation links", () => {
   render(
