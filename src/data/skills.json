@@ -1,0 +1,29 @@
+[
+  {
+    "id": "sailing",
+    "name": "Sailing",
+    "description": "Read the winds and get more speed out of your ship.",
+    "baseXp": 100,
+    "xpPerSecond": 2,
+    "effectPerLevel": 0.02,
+    "effectLabel": "travel speed"
+  },
+  {
+    "id": "gathering",
+    "name": "Gathering",
+    "description": "Spot resources faster and carry more back to the ship.",
+    "baseXp": 100,
+    "xpPerSecond": 3,
+    "effectPerLevel": 0.05,
+    "effectLabel": "resource yield"
+  },
+  {
+    "id": "bargaining",
+    "name": "Bargaining",
+    "description": "Squeeze a better share out of every gold coin.",
+    "baseXp": 100,
+    "xpPerSecond": 2,
+    "effectPerLevel": 0.03,
+    "effectLabel": "gold yield"
+  }
+]
