@@ -14,26 +14,29 @@ describe("useGameLoop", () => {
     vi.useRealTimers();
   });
 
-  it("trains skills on the fast tick and updates travel on the 1s tick", () => {
+  it("trains skills and updates travel on ticks", () => {
     const { unmount } = renderHook(() => useGameLoop());
 
-    vi.advanceTimersByTime(50);
-    const fast = useGameStore.getState();
-    expect(fast.skills.gathering.xp).toBeGreaterThan(0);
-    expect(fast.inventory.wood).toBe(0);
+    // Primer tick: 1000ms
+    vi.advanceTimersByTime(1000);
+    const afterFirstTick = useGameStore.getState();
+    expect(afterFirstTick.skills.gathering.xp).toBeGreaterThan(0);
+    expect(afterFirstTick.inventory.wood).toBeGreaterThan(0);
+    expect(afterFirstTick.totalPlaytime).toBe(1);
 
-    vi.advanceTimersByTime(950);
-    const docked = useGameStore.getState();
-    expect(docked.skills.gathering.xp).toBeGreaterThan(0);
-    expect(docked.inventory.wood).toBeGreaterThan(0);
+    // Segundo tick: otros 1000ms
+    vi.advanceTimersByTime(1000);
+    const afterSecondTick = useGameStore.getState();
+    expect(afterSecondTick.totalPlaytime).toBe(2);
 
+    // Iniciar viaje a Nassau
     useGameStore.getState().setDestination("nassau");
     vi.advanceTimersByTime(1000);
 
     const travelling = useGameStore.getState();
     expect(travelling.travelEta).toBe(59);
     expect(travelling.skills.sailing.xp).toBeGreaterThan(0);
-    expect(travelling.totalPlaytime).toBeCloseTo(2);
+    expect(travelling.totalPlaytime).toBe(3);
 
     unmount();
   });

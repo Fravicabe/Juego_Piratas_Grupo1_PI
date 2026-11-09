@@ -13,6 +13,15 @@ export interface Skill {
   level: number;
   xp: number;
   xpToNext: number;
+  baseXp?: number;
+  effectPerLevel?: number;
+}
+
+export interface SkillDefinition {
+  id: string;
+  name: string;
+  baseXp?: number;
+  effectPerLevel?: number;
 }
 
 export interface Ship {
