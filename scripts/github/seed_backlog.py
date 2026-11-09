@@ -262,6 +262,7 @@ query($login: String!, $number: Int!) {
     projectV2(number: $number) {
       id
       title
+      items(first: 1) { totalCount }
       fields(first: 50) {
         nodes {
           __typename
@@ -284,7 +285,7 @@ def load_project(owner: str, number: int, token: str) -> dict:
     for field in project["fields"]["nodes"]:
         fields[field["name"]] = field
     print(f"  project: {project['title']} ({project['id']})")
-    return {"id": project["id"], "fields": fields}
+    return {"id": project["id"], "fields": fields, "item_count": project["items"]["totalCount"]}
 
 
 def ensure_single_select(project: dict, name: str, options, colors: dict, token: str):
@@ -300,6 +301,9 @@ def ensure_single_select(project: dict, name: str, options, colors: dict, token:
         merged = [{"name": opt["name"], "color": colors.get(opt["name"], "GRAY"), "description": ""}
                   for opt in field["options"]]
         merged += [opt for opt in wanted if opt["name"] not in have]
+        if project.get("item_count"):
+            print("  ! AVISO: reescribir opciones vacía el campo Status de los items existentes.")
+            print("    Ejecuta después: --phase status")
         data = gql(
             """mutation($f: ID!, $opts: [ProjectV2SingleSelectFieldOptionInput!]!) {
                  updateProjectV2Field(input: {fieldId: $f, singleSelectOptions: $opts}) {
@@ -431,10 +435,62 @@ def phase_project(cfg: dict, token: str):
 
 
 # --------------------------------------------------------------------------- #
+def phase_status(cfg: dict, token: str):
+    """Reaplica solo el campo Status (rápido: 1 mutación por item)."""
+    repo = cfg["repo"]
+    print("== Fase status ==")
+    project = load_project(cfg["owner"], cfg["project_number"], token)
+    status_field = project["fields"].get("Status")
+    if not status_field:
+        raise SystemExit("ERROR: el proyecto no tiene campo Status")
+
+    data = gql(
+        """query($l: String!, $n: Int!) {
+             user(login: $l) { projectV2(number: $n) {
+               items(first: 100) { nodes { id content { ... on Issue { number } } } }
+             } }
+           }""",
+        {"l": cfg["owner"], "n": cfg["project_number"]},
+        token,
+        mutation=False,
+    )
+    nodes = data["user"]["projectV2"]["items"]["nodes"]
+    item_by_issue = {n["content"]["number"]: n["id"] for n in nodes if n.get("content")}
+
+    by_title, by_number = index_issues(repo, token)
+    updated = 0
+    for item in cfg["items"]:
+        issue = by_number.get(item.get("issue")) or by_title.get(item.get("title"))
+        if not issue:
+            continue
+        item_id = item_by_issue.get(issue["number"])
+        if not item_id:
+            continue
+        oid = option_id(status_field, item["status"])
+        if not oid:
+            print(f"  ! {item['id']}: opción Status '{item['status']}' no existe")
+            continue
+        if DRY:
+            print(f"  [dry-run] {item['id']} #{issue['number']} -> {item['status']}")
+            updated += 1
+            continue
+        gql(
+            """mutation($p: ID!, $i: ID!, $f: ID!, $o: String!) {
+                 updateProjectV2ItemFieldValue(input: {projectId: $p, itemId: $i, fieldId: $f,
+                                                      value: {singleSelectOptionId: $o}}) { projectV2Item { id } }
+               }""",
+            {"p": project["id"], "i": item_id, "f": status_field["id"], "o": oid},
+            token,
+        )
+        updated += 1
+    print(f"  estados actualizados: {updated}")
+
+
+# --------------------------------------------------------------------------- #
 def main():
     global DRY
     parser = argparse.ArgumentParser(description="Vuelca docs/backlog.json en GitHub")
-    parser.add_argument("--phase", choices=["issues", "project", "all"], default="all")
+    parser.add_argument("--phase", choices=["issues", "project", "status", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true", help="muestra lo que haría sin escribir")
     parser.add_argument("--only", help="filtra por prefijo de id, ej. PB-1")
     args = parser.parse_args()
@@ -451,6 +507,8 @@ def main():
         phase_issues(cfg, token)
     if args.phase in ("project", "all"):
         phase_project(cfg, token)
+    if args.phase in ("status", "all"):
+        phase_status(cfg, token)
     print("OK")
 
 
