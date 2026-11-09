@@ -1,4 +1,4 @@
-// Shared contract for the whole game. Changes require team review + PR.
+// Shared contract for the whole game. Changes require team review.
 
 export type ResourceId = "wood" | "iron" | "food" | "gold";
 
@@ -7,9 +7,17 @@ export interface ResourceAmount {
   amount: number;
 }
 
-export interface Skill {
+export interface SkillDefinition {
   id: string;
   name: string;
+  description: string;
+  baseXp: number;
+  xpPerSecond: number; // XP/s while this skill is the active one
+  effectPerLevel: number; // 0.05 = +5% of the effect per level
+  effectLabel: string; // what the effect improves, for the UI
+}
+
+export interface Skill extends SkillDefinition {
   level: number;
   xp: number;
   xpToNext: number;
@@ -36,18 +44,16 @@ export interface Island {
   name: string;
   description: string;
   resources: ResourceId[]; // what can be gathered here
-  travelTimeBase: number; // seconds from a reference point
+  travelTimeBase: number; // seconds from the reference island (Tortuga)
   unlocked: boolean;
 }
 
-export interface Inventory {
-  [key: string]: number; // ResourceId -> amount
-}
+// Gold is a resource too, so the inventory is the single source of truth.
+export type Inventory = Record<ResourceId, number>;
 
 export interface Player {
   name: string;
   rank: string;
-  gold: number;
 }
 
 export interface GameState {
@@ -56,6 +62,7 @@ export interface GameState {
   ship: Ship;
   crew: CrewMember[];
   skills: Record<string, Skill>;
+  activeSkillId: string | null; // skill trained by the fast tick
   islands: Record<string, Island>;
   discoveredIslands: string[];
   currentIslandId: string | null;
@@ -63,15 +70,22 @@ export interface GameState {
   travelEta: number; // seconds remaining
   inventory: Inventory;
   lastTick: number; // epoch ms
+  worldAccumulatorMs: number; // leftover time for the next 1s world tick
   totalPlaytime: number; // seconds
 }
 
-export type GameAction =
-  | { type: "SET_DESTINATION"; islandId: string }
-  | { type: "ARRIVE" }
-  | { type: "GATHER_TICK"; dt: number }
-  | { type: "LOAD"; state: GameState }
-  | { type: "RESET" };
-
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60; // 8 hours
+
+/**
+ * Fast simulation tick for skill progress. Progress Knight uses 50ms
+ * (20 updates/s). 10ms would mean 100 store updates/s and 1ms 1000/s;
+ * React only paints at ~60fps, so the extra work is not visible.
+ */
+export const SKILL_TICK_MS = 50;
+export const LOOP_TICK_MS = SKILL_TICK_MS;
+
+/** Travel, arrival and gathering stay on a 1 second tick. */
+export const WORLD_TICK_MS = 1000;
+
+export const AUTOSAVE_MS = 10_000;

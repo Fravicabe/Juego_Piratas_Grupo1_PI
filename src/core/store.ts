@@ -1,33 +1,109 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import type { GameState } from "./types";
-import { SCHEMA_VERSION } from "./types";
+import { createInitialState } from "./initialState";
+import { clearSave } from "./saveLoad";
+import { skillEffect } from "./skills";
+import {
+  advanceGame,
+  applyXp,
+  arriveAtDestination,
+  gatherFor,
+} from "./tick";
 
-const initialState: GameState = {
-  version: SCHEMA_VERSION,
-  player: { name: "Captain", rank: "Cabin Boy", gold: 0 },
-  ship: { id: "starter", name: "The Minnow", speed: 1, cargo: 50, hull: 100, maxHull: 100 },
-  crew: [],
-  skills: {},
-  islands: {},
-  discoveredIslands: [],
-  currentIslandId: null,
-  destinationIslandId: null,
-  travelEta: 0,
-  inventory: {},
-  lastTick: Date.now(),
-  totalPlaytime: 0,
-};
-
-interface GameStore extends GameState {
-  setState: (partial: Partial<GameState>) => void;
+export interface GameStore extends GameState {
+  setDestination: (islandId: string) => void;
+  setActiveSkill: (skillId: string) => void;
+  arrive: () => void;
+  gather: (dtSeconds: number) => void;
+  addXp: (skillId: string, amount: number) => void;
+  tick: (dtSeconds: number, now?: number) => void;
+  hydrate: (state: GameState) => void;
   reset: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
   immer((set) => ({
-    ...initialState,
-    setState: (partial) => set((s) => Object.assign(s, partial)),
-    reset: () => set(() => ({ ...initialState })),
+    ...createInitialState(),
+
+    setDestination: (islandId) =>
+      set((s) => {
+        const island = s.islands[islandId];
+        if (!island || !island.unlocked || islandId === s.currentIslandId) return;
+
+        const current = s.currentIslandId ? s.islands[s.currentIslandId] : undefined;
+        const distance = island.travelTimeBase - (current?.travelTimeBase ?? 0);
+        const sailing = s.skills.sailing;
+        const speedMultiplier = sailing ? skillEffect(sailing) : 1;
+        const speed = Math.max(0.1, s.ship.speed * speedMultiplier);
+
+        s.destinationIslandId = islandId;
+        s.travelEta = Math.max(1, Math.abs(distance) / speed);
+      }),
+
+    setActiveSkill: (skillId) =>
+      set((s) => {
+        if (!s.skills[skillId]) return;
+        s.activeSkillId = skillId;
+      }),
+
+    arrive: () =>
+      set((s) => {
+        Object.assign(s, arriveAtDestination(s as GameState));
+      }),
+
+    gather: (dtSeconds) =>
+      set((s) => {
+        Object.assign(s, gatherFor(s as GameState, dtSeconds));
+      }),
+
+    addXp: (skillId, amount) =>
+      set((s) => {
+        const skill = s.skills[skillId];
+        if (!skill) return;
+        s.skills[skillId] = applyXp(skill, amount);
+      }),
+
+    tick: (dtSeconds, now = Date.now()) =>
+      set((s) => {
+        Object.assign(s, advanceGame(s as GameState, dtSeconds));
+        s.lastTick = now;
+      }),
+
+    hydrate: (state) =>
+      set((s) => {
+        Object.assign(s, state);
+      }),
+
+    reset: () => {
+      clearSave();
+      set((s) => {
+        Object.assign(s, createInitialState());
+      });
+    },
   })),
 );
+
+/**
+ * Returns only the serializable game state, without the Zustand actions.
+ */
+export function getGameState(): GameState {
+  const s = useGameStore.getState();
+  return {
+    version: s.version,
+    player: s.player,
+    ship: s.ship,
+    crew: s.crew,
+    skills: s.skills,
+    activeSkillId: s.activeSkillId,
+    islands: s.islands,
+    discoveredIslands: s.discoveredIslands,
+    currentIslandId: s.currentIslandId,
+    destinationIslandId: s.destinationIslandId,
+    travelEta: s.travelEta,
+    inventory: s.inventory,
+    lastTick: s.lastTick,
+    worldAccumulatorMs: s.worldAccumulatorMs,
+    totalPlaytime: s.totalPlaytime,
+  };
+}
