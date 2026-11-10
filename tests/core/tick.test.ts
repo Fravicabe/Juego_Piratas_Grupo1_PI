@@ -8,6 +8,7 @@ import {
   applyTick,
   applyXp,
   gatherRate,
+  gatherRateForResource,
   xpForLevel,
 } from "../../src/core/tick";
 import { createSkill, SKILL_DEFINITIONS } from "../../src/core/skills";
@@ -60,6 +61,16 @@ describe("XP helpers", () => {
     expect(gatherRate(1)).toBe(1);
     expect(gatherRate(3)).toBeCloseTo(1.1);
     expect(gatherRate(3, 0.25)).toBe(1.5);
+  });
+
+  it("applies bargaining only to the gold gathering rate", () => {
+    const state = createInitialState(0);
+    state.skills.gathering.level = 3;
+    state.skills.bargaining.level = 3;
+
+    expect(gatherRateForResource(state, "wood")).toBeCloseTo(1.1);
+    expect(gatherRateForResource(state, "iron")).toBeCloseTo(1.1);
+    expect(gatherRateForResource(state, "gold")).toBeCloseTo(1.1 * 1.06);
   });
 });
 
@@ -130,7 +141,6 @@ describe("multi-rate game loop", () => {
     expect(next.travelEta).toBe(0);
     expect(next.discoveredIslands).toContain("nassau");
     expect(next.inventory.iron).toBeCloseTo(10);
-    expect(next.inventory.gold).toBeCloseTo(10);
     expect(next.totalPlaytime).toBe(40);
   });
 
@@ -140,7 +150,6 @@ describe("multi-rate game loop", () => {
     const next = applyTick(state, 10);
 
     expect(next.inventory.wood).toBe(10);
-    expect(next.inventory.food).toBe(10);
     expect(next.skills.gathering.level).toBe(1);
     expect(next.skills.gathering.xp).toBe(80);
     expect(next.totalPlaytime).toBe(10);
@@ -172,12 +181,13 @@ describe("multi-rate game loop", () => {
   it("makes bargaining multiply gold without touching other resources", () => {
     const state = createInitialState(0);
     state.activeSkillId = null;
-    state.currentIslandId = "nassau";
+    state.currentIslandId = "skull_isle";
+    state.discoveredIslands = ["tortuga", "skull_isle"];
+    state.islands.skull_isle.unlocked = true;
     state.skills.bargaining.level = 2;
 
     const next = applyTick(state, 10);
 
-    expect(next.inventory.iron).toBeCloseTo(10);
     expect(next.inventory.gold).toBeCloseTo(10.3);
     expect(next.skills.bargaining.xp).toBeCloseTo(10);
   });

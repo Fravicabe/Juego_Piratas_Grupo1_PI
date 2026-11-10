@@ -27,6 +27,13 @@ describe("useGameLoop", () => {
     expect(docked.skills.gathering.xp).toBeGreaterThan(0);
     expect(docked.inventory.wood).toBeGreaterThan(0);
 
+    // Give wood and unlock Nassau (costs 30 wood), then sail there
+    const currentState = useGameStore.getState();
+    useGameStore.getState().hydrate({
+      ...currentState,
+      inventory: { ...currentState.inventory, wood: 30 },
+    });
+    useGameStore.getState().unlockIsland("nassau");
     useGameStore.getState().setDestination("nassau");
     vi.advanceTimersByTime(1000);
 

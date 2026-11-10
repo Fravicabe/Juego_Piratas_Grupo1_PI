@@ -12,7 +12,7 @@ import { DEFAULT_ACTIVE_SKILL_ID, normalizeSkills } from "./skills";
 
 export const SAVE_KEY = "pirate-idle-save";
 
-const SUPPORTED_VERSIONS = [1, SCHEMA_VERSION];
+const SUPPORTED_VERSIONS = [1, 2, SCHEMA_VERSION];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -35,13 +35,22 @@ function isIsland(value: unknown): value is Island {
 function normalizeIslands(
   saved: Record<string, Island> | undefined,
   fallback: Record<string, Island>,
+  preserveUnlocks: boolean,
 ): Record<string, Island> {
-  const islands: Record<string, Island> = { ...fallback };
+  const islands: Record<string, Island> = {};
 
-  for (const [id, island] of Object.entries(saved ?? {})) {
-    if (isIsland(island)) {
-      islands[id] = island;
-    }
+  for (const [id, base] of Object.entries(fallback)) {
+    const savedIsland = saved?.[id];
+    const savedUnlocked = isIsland(savedIsland)
+      ? savedIsland.unlocked
+      : base.unlocked;
+
+    islands[id] = {
+      ...base,
+      resources: [...base.resources],
+      unlocked: preserveUnlocks ? savedUnlocked : base.unlocked,
+      ...(base.unlockCost ? { unlockCost: { ...base.unlockCost } } : {}),
+    };
   }
 
   return islands;
@@ -62,13 +71,20 @@ function normalizeInventory(
 }
 
 /**
- * Converts v1 saves (no active skill, no world accumulator, old XP curve) and
- * revalidates v2 saves against the current skill definitions.
+ * Converts v1/v2 saves and revalidates every save against the current content
+ * and skill definitions. Version 3 introduced resource-based island unlocks,
+ * so older saves rebuild the islands from `islands.json` instead of keeping
+ * stale `unlocked` flags.
  */
 function normalizeSave(save: Partial<GameState>): GameState {
   const fresh = createInitialState();
+  const savedVersion = Number(save.version) || 0;
   const skills = normalizeSkills(save.skills);
-  const islands = normalizeIslands(save.islands, fresh.islands);
+  const islands = normalizeIslands(
+    save.islands,
+    fresh.islands,
+    savedVersion >= SCHEMA_VERSION,
+  );
 
   const requestedSkill =
     typeof save.activeSkillId === "string" ? save.activeSkillId : null;
@@ -80,9 +96,11 @@ function normalizeSave(save: Partial<GameState>): GameState {
       ? requestedSkill
       : fallbackSkillId;
 
+  const requestedCurrentId =
+    typeof save.currentIslandId === "string" ? save.currentIslandId : null;
   const currentIslandId =
-    typeof save.currentIslandId === "string" && islands[save.currentIslandId]
-      ? save.currentIslandId
+    requestedCurrentId && islands[requestedCurrentId]?.unlocked
+      ? requestedCurrentId
       : fresh.currentIslandId;
 
   const savedDiscoveries = Array.isArray(save.discoveredIslands)
@@ -96,15 +114,26 @@ function normalizeSave(save: Partial<GameState>): GameState {
       ? [...new Set(savedDiscoveries)]
       : [...fresh.discoveredIslands];
 
+  // Every unlocked island is known on the map.
+  for (const [id, island] of Object.entries(islands)) {
+    if (island.unlocked && !discoveredIslands.includes(id)) {
+      discoveredIslands.push(id);
+    }
+  }
+
   if (currentIslandId && !discoveredIslands.includes(currentIslandId)) {
     discoveredIslands.push(currentIslandId);
   }
 
-  const destinationIslandId =
-    typeof save.destinationIslandId === "string" &&
-    islands[save.destinationIslandId] &&
-    save.destinationIslandId !== currentIslandId
+  const requestedDestinationId =
+    typeof save.destinationIslandId === "string"
       ? save.destinationIslandId
+      : null;
+  const destinationIslandId =
+    requestedDestinationId &&
+    islands[requestedDestinationId]?.unlocked &&
+    requestedDestinationId !== currentIslandId
+      ? requestedDestinationId
       : null;
 
   const rawAccumulator = Number(save.worldAccumulatorMs);
