@@ -3,18 +3,20 @@ import { formatEta } from "../../features/sailing/eta";
 import Button from "../components/Button";
 import ResourceBar from "../components/ResourceBar";
 import islandsJson from "../../data/islands.json";
+import type { ResourceId } from "../../core/types";
 
 interface IslandData {
   id: string;
   name: string;
   description: string;
-  resources: string[];
+  resources: ResourceId[];
   travelTimeBase: number;
   unlocked: boolean;
   lockedUntilLevel?: number;
+  unlockCost?: Partial<Record<ResourceId, number>>;
 }
 
-const RESOURCE_LABELS: Record<string, string> = {
+const RESOURCE_LABELS: Record<ResourceId, string> = {
   wood: "Madera",
   iron: "Hierro",
   food: "Comida",
@@ -36,6 +38,7 @@ export default function Map() {
   const shipSpeed = useGameStore((s) => s.ship.speed);
   const inventory = useGameStore((s) => s.inventory);
   const setDestination = useGameStore((s) => s.setDestination);
+  const unlockIsland = useGameStore((s) => s.unlockIsland);
 
   const isTraveling = destinationIslandId !== null;
 
@@ -51,6 +54,18 @@ export default function Map() {
       return;
     }
     setDestination(islandId);
+  };
+
+  const handleUnlock = (islandId: string) => {
+    unlockIsland(islandId);
+  };
+
+  const canAfford = (island: IslandData) => {
+    if (!island.unlockCost) return false;
+    return Object.entries(island.unlockCost).every(
+      ([resourceId, amount]) =>
+        (inventory[resourceId as ResourceId] ?? 0) >= amount
+    );
   };
 
   return (
@@ -79,15 +94,30 @@ export default function Map() {
               const discovered = discoveredIslands.includes(island.id);
               const lockedByLevel =
                 island.lockedUntilLevel && sailingLevel < island.lockedUntilLevel;
+              const lockedByCost =
+                island.unlockCost && !island.unlocked && !lockedByLevel;
+              const afford = lockedByCost ? canAfford(island) : false;
 
               let label = "Zarpar";
               let reason = "";
+              let showUnlock = false;
               if (isCurrent) label = "Estás aquí";
               else if (isTraveling) label = "En viaje...";
               else if (!discovered) label = "Sin descubrir";
               else if (lockedByLevel) {
                 label = "Bloqueada";
                 reason = `Requiere Navegación nivel ${island.lockedUntilLevel}`;
+              } else if (lockedByCost) {
+                showUnlock = true;
+                label = "Desbloquear";
+                const costText = Object.entries(island.unlockCost!)
+                  .map(([r, a]) => {
+                    const rid = r as ResourceId;
+                    return `${RESOURCE_LABELS[rid] ?? r} ×${a}`;
+                  })
+                  .join(" + ");
+                reason = `Costo: ${costText}`;
+                if (!afford) reason += " — insuficiente";
               }
 
               const cardClass = isCurrent
@@ -127,12 +157,36 @@ export default function Map() {
                   {lockedByLevel && (
                     <p className="text-xs text-amber-400 mb-3">{reason}</p>
                   )}
-                  <Button onClick={() => handleSail(island.id)}>
-                    {label}
-                  </Button>
-                  {reason && (
-                    <p className="text-xs text-amber-400 mt-2">{reason}</p>
+                  {showUnlock && (
+                    <>
+                      <p className="text-xs text-amber-400 mb-2">{reason}</p>
+                      <Button onClick={() => handleUnlock(island.id)}>
+                        {label}
+                      </Button>
+                      {!afford && (
+                        <p className="text-xs text-amber-400 mt-1">
+                          Recursos insuficientes
+                        </p>
+                      )}
+                    </>
                   )}
+                  {!showUnlock &&
+                    !lockedByLevel &&
+                    !isCurrent &&
+                    !isTraveling && (
+                      <Button
+                        onClick={() => handleSail(island.id)}
+                      >
+                        {label}
+                      </Button>
+                    )}
+                  {reason &&
+                    !showUnlock &&
+                    !lockedByLevel &&
+                    !isCurrent &&
+                    !isTraveling && (
+                      <p className="text-xs text-amber-400 mt-2">{reason}</p>
+                    )}
                 </div>
               );
             })}
@@ -147,7 +201,7 @@ export default function Map() {
                 key={id}
                 id={id}
                 amount={amount}
-                label={RESOURCE_LABELS[id] ?? id}
+                label={RESOURCE_LABELS[id as ResourceId] ?? id}
               />
             ))}
           </div>

@@ -3,7 +3,7 @@
     "id": "tortuga",
     "name": "Tortuga",
     "description": "A pirate haven.",
-    "resources": ["wood", "food"],
+    "resources": ["wood"],
     "travelTimeBase": 0,
     "unlocked": true
   },
@@ -11,17 +11,19 @@
     "id": "nassau",
     "name": "Nassau",
     "description": "Trading hub.",
-    "resources": ["iron", "gold"],
+    "resources": ["iron"],
     "travelTimeBase": 60,
-    "unlocked": true
+    "unlocked": false,
+    "unlockCost": { "wood": 30 }
   },
   {
     "id": "skull_isle",
     "name": "Skull Isle",
     "description": "Dangerous, rich.",
-    "resources": ["iron", "gold", "food"],
+    "resources": ["gold"],
     "travelTimeBase": 180,
     "unlocked": false,
-    "lockedUntilLevel": 10
+    "lockedUntilLevel": 10,
+    "unlockCost": { "wood": 50, "iron": 30 }
   }
 ]

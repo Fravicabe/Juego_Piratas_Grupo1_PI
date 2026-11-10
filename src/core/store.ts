@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import type { GameState } from "./types";
+import type { GameState, ResourceId } from "./types";
 import { createInitialState } from "./initialState";
 import { clearSave } from "./saveLoad";
 import { skillEffect } from "./skills";
@@ -14,6 +14,7 @@ import {
 export interface GameStore extends GameState {
   setDestination: (islandId: string) => void;
   setActiveSkill: (skillId: string) => void;
+  unlockIsland: (islandId: string) => void;
   arrive: () => void;
   gather: (dtSeconds: number) => void;
   addXp: (skillId: string, amount: number) => void;
@@ -44,6 +45,36 @@ export const useGameStore = create<GameStore>()(
 
         s.destinationIslandId = islandId;
         s.travelEta = Math.max(1, Math.abs(distance) / speed);
+      }),
+
+    unlockIsland: (islandId) =>
+      set((s) => {
+        const island = s.islands[islandId];
+        if (!island || island.unlocked) return;
+
+        const cost = island.unlockCost;
+        if (!cost) return;
+
+        // Check player can afford the cost
+        for (const [resourceId, amount] of Object.entries(cost)) {
+          const rid = resourceId as ResourceId;
+          if ((s.inventory[rid] ?? 0) < amount) return;
+        }
+
+        // Deduct cost
+        const inventory = { ...s.inventory };
+        for (const [resourceId, amount] of Object.entries(cost)) {
+          const rid = resourceId as ResourceId;
+          inventory[rid] = (inventory[rid] ?? 0) - amount;
+        }
+
+        s.inventory = inventory;
+        s.islands[islandId] = { ...island, unlocked: true };
+
+        // Mark as discovered so the player can sail there
+        if (!s.discoveredIslands.includes(islandId)) {
+          s.discoveredIslands = [...s.discoveredIslands, islandId];
+        }
       }),
 
     setActiveSkill: (skillId) =>

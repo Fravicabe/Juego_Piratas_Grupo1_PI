@@ -130,7 +130,6 @@ describe("multi-rate game loop", () => {
     expect(next.travelEta).toBe(0);
     expect(next.discoveredIslands).toContain("nassau");
     expect(next.inventory.iron).toBeCloseTo(10);
-    expect(next.inventory.gold).toBeCloseTo(10);
     expect(next.totalPlaytime).toBe(40);
   });
 
@@ -140,7 +139,6 @@ describe("multi-rate game loop", () => {
     const next = applyTick(state, 10);
 
     expect(next.inventory.wood).toBe(10);
-    expect(next.inventory.food).toBe(10);
     expect(next.skills.gathering.level).toBe(1);
     expect(next.skills.gathering.xp).toBe(80);
     expect(next.totalPlaytime).toBe(10);
@@ -172,12 +170,13 @@ describe("multi-rate game loop", () => {
   it("makes bargaining multiply gold without touching other resources", () => {
     const state = createInitialState(0);
     state.activeSkillId = null;
-    state.currentIslandId = "nassau";
+    state.currentIslandId = "skull_isle";
+    state.discoveredIslands = ["tortuga", "skull_isle"];
+    state.islands.skull_isle.unlocked = true;
     state.skills.bargaining.level = 2;
 
     const next = applyTick(state, 10);
 
-    expect(next.inventory.iron).toBeCloseTo(10);
     expect(next.inventory.gold).toBeCloseTo(10.3);
     expect(next.skills.bargaining.xp).toBeCloseTo(10);
   });

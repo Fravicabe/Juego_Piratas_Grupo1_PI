@@ -17,17 +17,25 @@ describe("game store", () => {
   });
 
   it("sets a destination and calculates the travel time", () => {
+    // Unlock Nassau first (costs 30 wood)
+    const state = createInitialState(0);
+    state.inventory.wood = 30;
+    useGameStore.getState().hydrate(state);
+    useGameStore.getState().unlockIsland("nassau");
+
     useGameStore.getState().setDestination("nassau");
 
-    const state = useGameStore.getState();
-    expect(state.destinationIslandId).toBe("nassau");
-    expect(state.travelEta).toBe(60);
+    const s = useGameStore.getState();
+    expect(s.destinationIslandId).toBe("nassau");
+    expect(s.travelEta).toBe(60);
   });
 
   it("uses the sailing skill to shorten travel time", () => {
     const state = createInitialState(0);
     state.skills.sailing.level = 6; // +2% per level => 1.1x speed
+    state.inventory.wood = 30;
     useGameStore.getState().hydrate(state);
+    useGameStore.getState().unlockIsland("nassau");
 
     useGameStore.getState().setDestination("nassau");
 
@@ -43,13 +51,18 @@ describe("game store", () => {
   });
 
   it("arrives and discovers the island", () => {
+    const state = createInitialState(0);
+    state.inventory.wood = 30;
+    useGameStore.getState().hydrate(state);
+    useGameStore.getState().unlockIsland("nassau");
+
     useGameStore.getState().setDestination("nassau");
     useGameStore.getState().arrive();
 
-    const state = useGameStore.getState();
-    expect(state.currentIslandId).toBe("nassau");
-    expect(state.destinationIslandId).toBeNull();
-    expect(state.discoveredIslands).toContain("nassau");
+    const s = useGameStore.getState();
+    expect(s.currentIslandId).toBe("nassau");
+    expect(s.destinationIslandId).toBeNull();
+    expect(s.discoveredIslands).toContain("nassau");
   });
 
   it("gathers resources and gains activity XP", () => {

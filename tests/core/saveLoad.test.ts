@@ -102,7 +102,7 @@ describe("save/load", () => {
 
     const loaded = loadGame();
 
-    expect(loaded?.islands.tortuga.resources).toEqual(["wood", "food"]);
+    expect(loaded?.islands.tortuga.resources).toEqual(["wood"]);
     expect(loaded?.islands.tortuga.travelTimeBase).toBe(0);
   });
 

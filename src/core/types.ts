@@ -47,6 +47,7 @@ export interface Island {
   travelTimeBase: number; // seconds from the reference island (Tortuga)
   unlocked: boolean;
   lockedUntilLevel?: number; // sailing level required to unlock
+  unlockCost?: Partial<Record<ResourceId, number>>; // resources needed to unlock the island
 }
 
 // Gold is a resource too, so the inventory is the single source of truth.
