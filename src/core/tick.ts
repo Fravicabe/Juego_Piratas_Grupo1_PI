@@ -1,6 +1,6 @@
 // Pure tick logic. Kept side-effect free so it is easy to test.
 
-import type { GameState, Skill } from "./types";
+import type { GameState, ResourceId, Skill } from "./types";
 import { OFFLINE_CAP_SECONDS, WORLD_TICK_MS } from "./types";
 import { applyXp, skillEffect } from "./skills";
 
@@ -45,6 +45,24 @@ export function gatherRate(level: number, effectPerLevel = 0.05): number {
   const safeLevel = Math.max(1, Number(level) || 1);
   const perLevel = Number.isFinite(effectPerLevel) ? effectPerLevel : 0.05;
   return GATHER_BASE_RATE * (1 + Math.max(0, safeLevel - 1) * perLevel);
+}
+
+/**
+ * Yield per second for a concrete resource. Gold also benefits from the
+ * bargaining multiplier, so the Home screen and the tick loop stay in sync.
+ */
+export function gatherRateForResource(
+  state: Pick<GameState, "skills">,
+  resourceId: ResourceId,
+): number {
+  const gathering = state.skills.gathering;
+  if (!gathering) return 0;
+
+  const base = gatherRate(gathering.level, gathering.effectPerLevel);
+  if (resourceId !== "gold") return base;
+
+  const bargaining = state.skills.bargaining;
+  return base * (bargaining ? skillEffect(bargaining) : 1);
 }
 
 export function arriveAtDestination(state: GameState): GameState {
@@ -128,14 +146,11 @@ export function gatherFor(state: GameState, dtSeconds: number): GameState {
   if (!island || !gathering) return state;
 
   const bargaining = state.skills.bargaining;
-  const goldMultiplier = bargaining ? skillEffect(bargaining) : 1;
-  const rate =
-    gatherRate(gathering.level, gathering.effectPerLevel) * dt;
   const inventory = { ...state.inventory };
 
   for (const resource of island.resources) {
-    const multiplier = resource === "gold" ? goldMultiplier : 1;
-    inventory[resource] = (inventory[resource] ?? 0) + rate * multiplier;
+    const rate = gatherRateForResource(state, resource) * dt;
+    inventory[resource] = (inventory[resource] ?? 0) + rate;
   }
 
   let skills: Record<string, Skill> = {

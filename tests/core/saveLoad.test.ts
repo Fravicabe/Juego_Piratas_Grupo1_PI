@@ -80,7 +80,7 @@ describe("save/load", () => {
 
     const loaded = loadGame();
 
-    expect(loaded?.version).toBe(2);
+    expect(loaded?.version).toBe(3);
     expect(loaded?.skills.sailing.level).toBe(4);
     expect(loaded?.skills.sailing.xp).toBe(10);
     expect(loaded?.skills.sailing.xpToNext).toBe(xpForLevel(4));
@@ -104,6 +104,40 @@ describe("save/load", () => {
 
     expect(loaded?.islands.tortuga.resources).toEqual(["wood"]);
     expect(loaded?.islands.tortuga.travelTimeBase).toBe(0);
+  });
+
+  it("refreshes static island data while preserving unlock progress", () => {
+    const state = createInitialState(1234);
+    state.islands.nassau.unlocked = true;
+    state.discoveredIslands.push("nassau");
+
+    saveGame(state);
+    const loaded = loadGame();
+
+    expect(loaded?.islands.nassau.unlocked).toBe(true);
+    expect(loaded?.islands.nassau.resources).toEqual(["iron"]);
+    expect(loaded?.islands.nassau.unlockCost).toEqual({ wood: 30 });
+    expect(loaded?.discoveredIslands).toContain("nassau");
+  });
+
+  it("resets old island unlocks when migrating a v2 save", () => {
+    const state = createInitialState(1234);
+    state.islands.nassau.unlocked = true;
+    state.islands.skull_isle.unlocked = true;
+    state.currentIslandId = "nassau";
+    state.discoveredIslands = ["tortuga", "nassau", "skull_isle"];
+
+    localStorage.setItem(
+      SAVE_KEY,
+      JSON.stringify({ ...state, version: 2 }),
+    );
+
+    const loaded = loadGame();
+
+    expect(loaded?.version).toBe(3);
+    expect(loaded?.islands.nassau.unlocked).toBe(false);
+    expect(loaded?.islands.skull_isle.unlocked).toBe(false);
+    expect(loaded?.currentIslandId).toBe("tortuga");
   });
 
   it("levels up a migrated skill when its old XP exceeds the new curve", () => {

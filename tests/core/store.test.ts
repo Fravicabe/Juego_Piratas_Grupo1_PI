@@ -84,11 +84,35 @@ describe("game store", () => {
     expect(state.inventory.wood).toBe(10);
   });
 
+  it("does not start a trip to a locked island", () => {
+    const state = createInitialState(0);
+    state.inventory.wood = 30;
+    useGameStore.getState().hydrate(state);
+
+    useGameStore.getState().setDestination("nassau");
+
+    const s = useGameStore.getState();
+    expect(s.destinationIslandId).toBeNull();
+    expect(s.travelEta).toBe(0);
+  });
+
+  it("does not overwrite a trip that is already in progress", () => {
+    const state = createInitialState(0);
+    state.inventory.wood = 30;
+    useGameStore.getState().hydrate(state);
+    useGameStore.getState().unlockIsland("nassau");
+    useGameStore.getState().setDestination("nassau");
+
+    useGameStore.getState().setDestination("tortuga");
+
+    expect(useGameStore.getState().destinationIslandId).toBe("nassau");
+  });
+
   it("exports the serializable state with the new fields", () => {
     const state = getGameState();
 
     expect(state.activeSkillId).toBe("gathering");
     expect(state.worldAccumulatorMs).toBe(0);
-    expect(state.version).toBe(2);
+    expect(state.version).toBe(3);
   });
 });

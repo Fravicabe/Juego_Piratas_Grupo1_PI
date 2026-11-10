@@ -8,6 +8,7 @@ import {
   applyTick,
   applyXp,
   gatherRate,
+  gatherRateForResource,
   xpForLevel,
 } from "../../src/core/tick";
 import { createSkill, SKILL_DEFINITIONS } from "../../src/core/skills";
@@ -60,6 +61,16 @@ describe("XP helpers", () => {
     expect(gatherRate(1)).toBe(1);
     expect(gatherRate(3)).toBeCloseTo(1.1);
     expect(gatherRate(3, 0.25)).toBe(1.5);
+  });
+
+  it("applies bargaining only to the gold gathering rate", () => {
+    const state = createInitialState(0);
+    state.skills.gathering.level = 3;
+    state.skills.bargaining.level = 3;
+
+    expect(gatherRateForResource(state, "wood")).toBeCloseTo(1.1);
+    expect(gatherRateForResource(state, "iron")).toBeCloseTo(1.1);
+    expect(gatherRateForResource(state, "gold")).toBeCloseTo(1.1 * 1.06);
   });
 });
 

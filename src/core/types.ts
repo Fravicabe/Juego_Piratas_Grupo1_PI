@@ -48,6 +48,7 @@ export interface Island {
   unlocked: boolean;
   lockedUntilLevel?: number; // sailing level required to unlock
   unlockCost?: Partial<Record<ResourceId, number>>; // resources needed to unlock the island
+  requiresIslandId?: string; // previous island that must be unlocked first
 }
 
 // Gold is a resource too, so the inventory is the single source of truth.
@@ -76,7 +77,7 @@ export interface GameState {
   totalPlaytime: number; // seconds
 }
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60; // 8 hours
 
 /**

@@ -28,6 +28,11 @@ El estado se guarda en `useGameStore` (Zustand + Immer). Campos principales:
 > 🔒 Las islas pueden definir `lockedUntilLevel`. `setDestination` rechaza el
 > viaje si el nivel de `sailing` no alcanza ese requisito.
 
+> 🗝️ Las islas también pueden definir `unlockCost` (recursos necesarios) y
+> `requiresIslandId` (isla anterior que debe estar desbloqueada). La acción
+> `unlockIsland` valida ambos requisitos, descuenta los recursos y marca la isla
+> como descubierta.
+
 ### Habilidades
 
 Las definiciones están en `src/data/skills.json` y se cargan en
@@ -73,8 +78,10 @@ Ejemplos: nivel 1 → 100 XP, nivel 2 → 202, nivel 3 → 306, nivel 10 → 109
 ```ts
 const setDestination = useGameStore((s) => s.setDestination);
 const setActiveSkill = useGameStore((s) => s.setActiveSkill);
+const unlockIsland = useGameStore((s) => s.unlockIsland);
 const reset = useGameStore((s) => s.reset);
 
+unlockIsland("nassau");    // paga el coste y desbloquea la isla
 setDestination("nassau");  // inicia el viaje
 setActiveSkill("sailing"); // entrena navegación en el tick rápido
 reset();                   // borra el guardado y empieza de cero
@@ -84,6 +91,7 @@ reset();                   // borra el guardado y empieza de cero
 |---|---|---|
 | `setDestination` | `(islandId: string) => void` | Calcula `travelEta` según distancia, velocidad y skill de navegación |
 | `setActiveSkill` | `(skillId: string) => void` | Cambia la habilidad que entrena el tick rápido |
+| `unlockIsland` | `(islandId: string) => boolean` | Valida coste/cadena, descuenta recursos y descubre la isla |
 | `arrive` | `() => void` | Fuerza la llegada a la isla destino |
 | `gather` | `(dtSeconds: number) => void` | Recolecta recursos y da XP de actividad |
 | `addXp` | `(skillId: string, amount: number) => void` | Suma XP y sube de nivel |
@@ -154,6 +162,6 @@ Archivos:
 
 - `tests/core/tick.test.ts` — reloj, multi-rate, viaje, recolección, XP, offline.
 - `tests/core/skills.test.ts` — curva de XP, efectos, normalización de skills.
-- `tests/core/saveLoad.test.ts` — round-trip, migración v1→v2, saves inválidos.
+- `tests/core/saveLoad.test.ts` — round-trip, migración v1/v2→v3, saves inválidos.
 - `tests/core/store.test.ts` — acciones del store y skill activa.
 - `tests/core/useGameLoop.test.ts` — integración del loop: 50 ms para skills, 1 s para viaje.

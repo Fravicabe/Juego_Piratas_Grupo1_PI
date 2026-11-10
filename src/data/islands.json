@@ -14,7 +14,8 @@
     "resources": ["iron"],
     "travelTimeBase": 60,
     "unlocked": false,
-    "unlockCost": { "wood": 30 }
+    "unlockCost": { "wood": 30 },
+    "requiresIslandId": "tortuga"
   },
   {
     "id": "skull_isle",
@@ -23,7 +24,7 @@
     "resources": ["gold"],
     "travelTimeBase": 180,
     "unlocked": false,
-    "lockedUntilLevel": 10,
-    "unlockCost": { "wood": 50, "iron": 30 }
+    "unlockCost": { "wood": 50, "iron": 30 },
+    "requiresIslandId": "nassau"
   }
 ]
