@@ -22,7 +22,7 @@
     "name": "Bargaining",
     "description": "Squeeze a better share out of every gold coin.",
     "baseXp": 100,
-    "xpPerSecond": 2,
+    "xpPerSecond": 5,
     "effectPerLevel": 0.03,
     "effectLabel": "gold yield"
   }
