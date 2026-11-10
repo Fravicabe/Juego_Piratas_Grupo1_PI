@@ -22,6 +22,6 @@
     "resources": ["iron", "gold", "food"],
     "travelTimeBase": 180,
     "unlocked": false,
-    "lockedUntilLevel": 50
+    "lockedUntilLevel": 10
   }
 ]

@@ -1,6 +1,7 @@
 import islandsJson from "../data/islands.json";
-import type { GameState, Island, ResourceId, Skill } from "./types";
+import type { GameState, Island, ResourceId } from "./types";
 import { SCHEMA_VERSION } from "./types";
+import { createSkills, DEFAULT_ACTIVE_SKILL_ID } from "./skills";
 
 export const STARTING_ISLAND_ID = "tortuga";
 
@@ -23,25 +24,6 @@ function createIslands(): Record<string, Island> {
   return islands;
 }
 
-function createSkills(): Record<string, Skill> {
-  return {
-    sailing: {
-      id: "sailing",
-      name: "Sailing",
-      level: 1,
-      xp: 0,
-      xpToNext: 100,
-    },
-    gathering: {
-      id: "gathering",
-      name: "Gathering",
-      level: 1,
-      xp: 0,
-      xpToNext: 100,
-    },
-  };
-}
-
 /**
  * Builds a fresh game state. Passing `now` keeps tests deterministic.
  */
@@ -59,6 +41,7 @@ export function createInitialState(now = Date.now()): GameState {
     },
     crew: [],
     skills: createSkills(),
+    activeSkillId: DEFAULT_ACTIVE_SKILL_ID,
     islands: createIslands(),
     discoveredIslands: [STARTING_ISLAND_ID],
     currentIslandId: STARTING_ISLAND_ID,
@@ -66,6 +49,7 @@ export function createInitialState(now = Date.now()): GameState {
     travelEta: 0,
     inventory: { wood: 0, iron: 0, food: 0, gold: 0 },
     lastTick: now,
+    worldAccumulatorMs: 0,
     totalPlaytime: 0,
   };
 }
