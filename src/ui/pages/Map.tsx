@@ -103,7 +103,6 @@ export default function Map() {
               let showUnlock = false;
               if (isCurrent) label = "Estás aquí";
               else if (isTraveling) label = "En viaje...";
-              else if (!discovered) label = "Sin descubrir";
               else if (lockedByLevel) {
                 label = "Bloqueada";
                 reason = `Requiere Navegación nivel ${island.lockedUntilLevel}`;
@@ -118,7 +117,7 @@ export default function Map() {
                   .join(" + ");
                 reason = `Costo: ${costText}`;
                 if (!afford) reason += " — insuficiente";
-              }
+              } else if (!discovered) label = "Sin descubrir";
 
               const cardClass = isCurrent
                 ? "bg-gold/10 border-gold/30"
