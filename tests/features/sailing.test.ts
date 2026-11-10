@@ -22,11 +22,11 @@ describe("formatEta", () => {
 
 describe("canSailTo", () => {
   const nassau = { id: "nassau", unlocked: true };
-  const skullIsle = { id: "skull_isle", unlocked: false, lockedUntilLevel: 50 };
+  const skullIsle = { id: "skull_isle", unlocked: false, lockedUntilLevel: 10 };
   const skullIsleUnlocked = {
     id: "skull_isle",
     unlocked: true,
-    lockedUntilLevel: 50,
+    lockedUntilLevel: 10,
   };
 
   it("allows sailing to an unlocked, discovered island that is not current", () => {
@@ -47,11 +47,11 @@ describe("canSailTo", () => {
 
   it("blocks islands locked by level when sailing level is too low", () => {
     expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 1)).toBe(false);
-    expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 49)).toBe(false);
+    expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 9)).toBe(false);
   });
 
   it("allows islands locked by level when sailing level is sufficient", () => {
-    expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 50)).toBe(true);
+    expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 10)).toBe(true);
     expect(canSailTo(skullIsleUnlocked, "tortuga", false, true, 99)).toBe(true);
   });
 

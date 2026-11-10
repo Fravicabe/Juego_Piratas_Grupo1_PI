@@ -54,7 +54,9 @@ export function applyXp(skill: Skill, amount: number): Skill {
  */
 export function skillEffect(skill: Skill): number {
   const level = Math.max(1, Math.floor(Number(skill.level) || 1));
-  const perLevel = skill.effectPerLevel ?? 0;
+  const perLevel = Number.isFinite(skill.effectPerLevel)
+    ? skill.effectPerLevel
+    : 0;
   return 1 + Math.max(0, level - 1) * perLevel;
 }
 

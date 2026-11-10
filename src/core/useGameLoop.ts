@@ -3,10 +3,15 @@ import { bootstrapGame } from "./bootstrap";
 import { getGameState, useGameStore } from "./store";
 import { saveGame } from "./saveLoad";
 import { accumulateTicks } from "./tick";
-import { AUTOSAVE_MS, OFFLINE_CAP_SECONDS, TICK_MS } from "./types";
+import { AUTOSAVE_MS, LOOP_TICK_MS, OFFLINE_CAP_SECONDS } from "./types";
 
 /**
- * Runs the game clock: loads the save, ticks once per second and autosaves.
+ * Runs the game clock.
+ *
+ * One 50ms loop drives both rates:
+ * - the whole delta trains the active skill (fast, smooth XP bar);
+ * - `advanceGame` accumulates it and runs travel/gathering on exact 1s ticks.
+ *
  * Mount it once, for example through <GameLoop /> in main.tsx.
  */
 export function useGameLoop(): void {
@@ -21,8 +26,11 @@ export function useGameLoop(): void {
         now,
         OFFLINE_CAP_SECONDS,
       );
-      state.tick(elapsedSeconds, now);
-    }, TICK_MS);
+
+      if (elapsedSeconds > 0) {
+        state.tick(elapsedSeconds, now);
+      }
+    }, LOOP_TICK_MS);
 
     const saveNow = () => saveGame(getGameState());
     const saveId = window.setInterval(saveNow, AUTOSAVE_MS);
