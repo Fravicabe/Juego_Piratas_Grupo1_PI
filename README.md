@@ -246,8 +246,11 @@ git push -u origin feature/s1-core-state
 
 ## 📄 Más información
 
+- Backlog del producto: `docs/BACKLOG.md`
+- Sprint Backlog (sprint en curso): `docs/SPRINT_BACKLOG.md`
 - Plan completo: `docs/PLAN.md`
 - Plan de calidad (tests, review, gates): `docs/QUALITY.md`
 - Issues del Sprint 1: `docs/ISSUES_SPRINT1.md`
+- Tablero: https://github.com/users/Fravicabe/projects/2
 
 _Versión 1.0 — se ajusta a medida que el equipo aprende._
