@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGameStore } from "../../core/store";
 import { gatherRateForResource } from "../../core/tick";
 import { getIslandUnlockStatus } from "../../core/islands";
-import { resourceLabel } from "../../features/sailing/resources";
+import { resourceLabel, resourceName } from "../../features/sailing/resources";
 import type { ResourceId } from "../../core/types";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import ProgressBar from "../components/ProgressBar";
+import ResourceBar from "../components/ResourceBar";
+import Modal from "../components/Modal";
 
 const SKILL_LABELS: Record<string, string> = {
   gathering: "Recolección",
@@ -22,6 +25,7 @@ const SKILL_EFFECT_LABELS: Record<string, string> = {
 
 export default function Home() {
   const navigate = useNavigate();
+  const [helpOpen, setHelpOpen] = useState(false);
   const currentIslandId = useGameStore((s) => s.currentIslandId);
   const islands = useGameStore((s) => s.islands);
   const skills = useGameStore((s) => s.skills);
@@ -88,10 +92,11 @@ export default function Home() {
               key={resourceId}
               className="bg-sea/20 rounded-lg p-3 border border-sea/30"
             >
-              <p className="text-xs opacity-80">{resourceLabel(resourceId)}</p>
-              <p className="font-bold text-gold text-lg">
-                {Math.floor(inventory[resourceId])}
-              </p>
+              <ResourceBar
+                id={resourceId}
+                amount={inventory[resourceId]}
+                label={resourceName(resourceId)}
+              />
             </div>
           ))}
         </div>
@@ -261,7 +266,28 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <div className="mt-4">
+          <Button variant="secondary" onClick={() => setHelpOpen(true)}>
+            ❓ Cómo jugar
+          </Button>
+        </div>
       </Card>
+
+      <Modal
+        isOpen={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        title="Cómo jugar"
+      >
+        <ol className="list-decimal list-inside space-y-2 text-sm text-parchment">
+          <li>Recolecta automáticamente mientras estás en una isla.</li>
+          <li>Gana recursos y XP; las habilidades mejoran tu rendimiento.</li>
+          <li>Paga recursos para desbloquear la siguiente isla.</li>
+          <li>Zarpa desde el mapa: la recolección se pausa al navegar.</li>
+        </ol>
+        <div className="flex justify-end mt-4">
+          <Button onClick={() => setHelpOpen(false)}>Entendido</Button>
+        </div>
+      </Modal>
     </div>
   );
 }

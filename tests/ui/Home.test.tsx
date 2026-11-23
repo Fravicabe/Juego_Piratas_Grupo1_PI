@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { createInitialState } from "../../src/core/initialState";
 import { useGameStore } from "../../src/core/store";
@@ -20,6 +20,7 @@ describe("Home", () => {
 
   afterEach(() => {
     cleanup();
+    document.body.style.overflow = "unset";
   });
 
   it("shows the current island, gathering rate and skill XP", () => {
@@ -66,5 +67,17 @@ describe("Home", () => {
     renderHome();
 
     expect(screen.getByText("En pausa (navegando)")).toBeTruthy();
+  });
+
+  it("opens the help modal from the quick actions", () => {
+    renderHome();
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "❓ Cómo jugar" }));
+    expect(screen.getByRole("dialog", { name: "Cómo jugar" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Entendido" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
