@@ -203,6 +203,7 @@ cd pirate-idle
 npm install
 npm run dev          # http://localhost:5173
 npm run test         # vitest
+npm run validate:data # valida los JSON de src/data contra sus esquemas
 npm run build        # build de producción
 npm run lint         # eslint (flat config)
 npm run format       # prettier: formatea todo el repo
