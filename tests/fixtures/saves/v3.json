@@ -1,0 +1,88 @@
+{
+  "version": 3,
+  "player": {
+    "name": "Captain",
+    "rank": "Deckhand"
+  },
+  "ship": {
+    "id": "starter",
+    "name": "The Minnow",
+    "speed": 1,
+    "cargo": 50,
+    "hull": 100,
+    "maxHull": 100
+  },
+  "crew": [],
+  "skills": {
+    "sailing": {
+      "id": "sailing",
+      "name": "Sailing",
+      "level": 8,
+      "xp": 350,
+      "xpToNext": 807
+    },
+    "gathering": {
+      "id": "gathering",
+      "name": "Gathering",
+      "level": 7,
+      "xp": 120,
+      "xpToNext": 707
+    },
+    "bargaining": {
+      "id": "bargaining",
+      "name": "Bargaining",
+      "level": 2,
+      "xp": 40,
+      "xpToNext": 202
+    }
+  },
+  "activeSkillId": "gathering",
+  "islands": {
+    "tortuga": {
+      "id": "tortuga",
+      "name": "Tortuga",
+      "description": "A pirate haven.",
+      "resources": ["wood"],
+      "travelTimeBase": 0,
+      "unlocked": true
+    },
+    "nassau": {
+      "id": "nassau",
+      "name": "Nassau",
+      "description": "Trading hub.",
+      "resources": ["iron"],
+      "travelTimeBase": 60,
+      "unlocked": true,
+      "unlockCost": {
+        "wood": 30
+      },
+      "requiresIslandId": "tortuga"
+    },
+    "skull_isle": {
+      "id": "skull_isle",
+      "name": "Skull Isle",
+      "description": "Dangerous, rich.",
+      "resources": ["gold"],
+      "travelTimeBase": 180,
+      "unlocked": false,
+      "unlockCost": {
+        "wood": 50,
+        "iron": 30
+      },
+      "requiresIslandId": "nassau"
+    }
+  },
+  "discoveredIslands": ["tortuga", "nassau"],
+  "currentIslandId": "nassau",
+  "destinationIslandId": null,
+  "travelEta": 0,
+  "inventory": {
+    "wood": 410,
+    "iron": 180,
+    "food": 260,
+    "gold": 140
+  },
+  "lastTick": 1760000000000,
+  "worldAccumulatorMs": 750,
+  "totalPlaytime": 3600
+}
