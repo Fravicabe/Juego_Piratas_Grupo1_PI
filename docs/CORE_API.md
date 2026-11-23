@@ -3,6 +3,12 @@
 Documento de apoyo para Francisco (UI) y Bryton (gameplay). El motor está en
 `src/core/` y ya está montado en la app mediante `<GameLoop />` en `src/main.tsx`.
 
+> ⚠️ **Contrato en transición (Sprint 2).** Esta guía describe la **API actual
+> (schema v2)**. El diseño objetivo y el contrato **v3** están en
+> [`GAMEPLAY.md`](./GAMEPLAY.md). Hasta que el core v3 esté implementado, la UI debe
+> seguir usando la API v2; los cambios de v3 se anunciarán aquí y en el PR del core.
+> Cualquier PR que toque `src/core` debe contrastarse con `GAMEPLAY.md`.
+
 ## Estado del juego
 
 El estado se guarda en `useGameStore` (Zustand + Immer). Campos principales:
@@ -165,3 +171,61 @@ Archivos:
 - `tests/core/saveLoad.test.ts` — round-trip, migración v1/v2→v3, saves inválidos.
 - `tests/core/store.test.ts` — acciones del store y skill activa.
 - `tests/core/useGameLoop.test.ts` — integración del loop: 50 ms para skills, 1 s para viaje.
+
+---
+
+## Cambios previstos para el core v3 (Sprint 2)
+
+> **No implementados todavía.** Son el contrato que el equipo debe revisar antes de
+> empezar el Sprint 2. El diseño completo está en [`GAMEPLAY.md`](./GAMEPLAY.md).
+
+### Estado
+
+| Cambio | Detalle |
+| --- | --- |
+| **Se añade** | `currentActionId`, `actionProgressMs`, `knownIslands`, `shipHold`, `islandStorage`, `islandWarehouses`, `items`, `combat`, `branch`, `prestige` |
+| **Se elimina** | `inventory` (→ `shipHold`), `activeSkillId` (→ acción activa), `discoveredIslands` (→ `knownIslands`), `Island.lockedUntilLevel` (→ `minSailingLevel` + `minShipTier`) |
+| **Se mantiene** | `skills`, `ship`, `crew`, `islands`, `currentIslandId`, `destinationIslandId`, `travelEta`, `lastTick`, `worldAccumulatorMs`, `totalPlaytime` |
+| **Schema** | `SCHEMA_VERSION = 3`; se aceptan saves v1, v2 y v3 |
+
+### Acciones del store (previstas)
+
+```ts
+setAction(actionId: string): void;
+clearAction(): void;
+travelTo(islandId: string): boolean;   // false si faltan requisitos/suministros
+abortTravel(): void;
+transfer(resource: ResourceId, amount: number, from: "hold" | "storage"): void;
+buy(resource: ResourceId, amount: number): void;
+sell(resource: ResourceId, amount: number): void;
+upgradeShip(track: "hull" | "cargo" | "cannons"): void;
+upgradeWarehouse(islandId: string): void;
+fight(enemyId: string): void;
+retreat(): void;
+chooseBranch(branch: "trader" | "pirate"): void;
+prestige(): void;
+```
+
+### Datos
+
+- `actions.json`, `buildings.json`, `enemies.json`, `crew.json`, `ranks.json`,
+  `branches.json`, `prestige.json`, `items.json`.
+- `skills.json` mantiene identidad, `baseXp` y `effectPerLevel`; **la XP/s y el
+  rendimiento los define la acción**, no la habilidad.
+- `islands.json` añade `type`, `x`, `y`, `minSailingLevel`, `minShipTier`, `danger`,
+  `yieldBonus`, `storage`, `services`, `prices`, `hint` y `reveals`.
+
+### Migración v2 → v3
+
+- `inventory` → `shipHold`; el excedente va al almacén de Tortuga (soft cap).
+- `gathering` → `woodcutting`, `mining` y `provisions` con el mismo nivel.
+- `sailing` y `bargaining` se conservan; `combat` y `shipwright` empiezan en 1.
+- `discoveredIslands` → `knownIslands` como `discovered`.
+- `activeSkillId` se descarta; `currentActionId` empieza en `null`.
+
+### Reglas que no cambian
+
+- Tick rápido de 50 ms para XP; tick de mundo de 1 s para viaje/recolección.
+- Curva Progress Knight como única curva de XP.
+- Offline con cap de 8 h y tramos de 60 s.
+- Autoguardado cada 10 s.
