@@ -215,7 +215,7 @@ git checkout dev
 git pull
 git checkout -b feature/s1-core-state
 # ... trabajo ...
-npm run check          # lint + tests + build deben pasar
+npm run lint && npm run test && npm run build
 git push -u origin feature/s1-core-state
 # Abrir PR en GitHub: feature/s1-core-state -> dev
 # → buddy review + CI verde → squash merge
