@@ -5,6 +5,31 @@ Juego idle de piratas inspirado en **Melvor Idle** y **Progress Knight**.
 
 ---
 
+## 🚀 Cómo ejecutar
+
+Requisitos: **Node.js 20** y npm.
+
+```bash
+git clone https://github.com/Fravicabe/Juego_Piratas_Grupo1_PI.git
+cd Juego_Piratas_Grupo1_PI
+npm ci
+npm run dev        # http://localhost:5173
+```
+
+La rama de ejecución es **`main`**. Release actual: **`v0.1.0`** (Sprint 1).
+
+Comprobaciones:
+
+```bash
+npm run lint       # ESLint
+npm run test       # Vitest — 99 tests
+npm run build      # build de producción en dist/
+```
+
+Si `npm ci` falla por el lockfile, usa `npm install`.
+
+---
+
 ## 🎮 Visión del juego
 
 Juego idle en navegador donde el jugador navega entre islas, recolecta recursos,
@@ -104,30 +129,16 @@ hotfix/*    ← desde main, para bugs críticos en producción
 5. **Hotfixes**: rama `hotfix/*` desde `main`, PR a `main` y cherry-pick/merge a `dev`.
 6. **Un PR por tarea**, pequeño y enfocado. PRs grandes se rechazan y se parten.
 
-### Estado actual de `main` y cómo protegerla
-Durante el arranque del proyecto se subió la base directamente a `main` (sin PR),
-porque la protección aún no estaba configurada. Para dejarlo "limpio" a estándar
-empresarial, elige una de estas dos opciones:
+### Protección de ramas
 
-**Opción A — Mantener y proteger desde ahora (recomendada, menos trabajo)**
-1. En GitHub: Settings → Branches → Add rule para `main` (y para `dev`).
-2. Activar: "Require a pull request before merging", "Require status checks to pass",
-   "Require approvals (1)", "Do not allow bypassing", "Block force pushes".
-3. A partir de ahora todo cambio a `main`/`dev` entra por PR. El historial previo
-   queda como "bootstrap" y es aceptable.
+Configuración obligatoria para todo el equipo:
 
-**Opción B — Resetear `main` a un estado limpio (más estricto)**
-Si quieres que `main` empiece desde el commit inicial del repo remoto (`a92e99e`)
-y que todo lo demás entre por PR:
-```bash
-git fetch origin
-git checkout main
-git reset --hard a92e99e          # vuelve al commit inicial remoto
-git push --force origin main      # ⚠️ solo si nadie más ha clonado aún
-# Luego: abrir PRs desde dev/feature para reintroducir el scaffold y docs
-```
-> ⚠️ El force-push solo es seguro si el equipo aún no ha clonado el repo.
-> Si ya hay clones, usa la Opción A.
+- PR obligatorio para entrar en `main` y `dev`.
+- **1 aprobación** de un compañero.
+- `quality-gate` (lint + test + build) en verde.
+- Prohibido el force-push y el borrado de ramas.
+
+El historial anterior a `v0.1.0` se considera *bootstrap* y no se reescribe.
 
 ### Nomenclatura de ramas**
 ```
@@ -195,30 +206,15 @@ Objetivo: app ejecutable donde el jugador navega, recolecta y ve números subir.
 
 ---
 
-## 🚀 Comandos rápidos
+## 🌿 Flujo de trabajo
 
 ```bash
-git clone <repo>
-cd pirate-idle
-npm install
-npm run dev          # http://localhost:5173
-npm run test         # vitest
-npm run build        # build de producción
-npm run lint         # eslint (flat config)
-npm run format       # prettier: formatea todo el repo
-npm run format:check # comprueba el formato sin modificar archivos
-```
-
-Flujo de ramas de ejemplo (con PR, estándar empresarial):
-```bash
-git checkout dev
-git pull
-git checkout -b feature/s1-core-state
+git checkout dev && git pull
+git checkout -b feature/s2-<slug>
 # ... trabajo ...
 npm run lint && npm run test && npm run build
-git push -u origin feature/s1-core-state
-# Abrir PR en GitHub: feature/s1-core-state -> dev
-# → buddy review + CI verde → squash merge
+git push -u origin feature/s2-<slug>
+# PR a dev → 1 review + quality-gate verde → merge
 ```
 
 ---
